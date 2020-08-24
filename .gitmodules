@@ -1,8 +1,8 @@
-[submodule "essentia"]
-	path = essentia
-	url = https://github.com/MTG/essentia.git
-	branch = master
-[submodule "gaia"]
-	path = gaia
+[submodule "lib/gaia"]
+	path = lib/gaia
 	url = https://github.com/MTG/gaia.git
+	branch = master
+[submodule "lib/essentia"]
+	path = lib/essentia
+	url = https://github.com/MTG/essentia.git
 	branch = master
