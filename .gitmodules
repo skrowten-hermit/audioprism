@@ -1,6 +1,6 @@
 [submodule "essentia"]
-	path = lib/
+	path = lib/essentia
 	url = https://github.com/MTG/essentia.git
 [submodule "gaia"]
-	path = lib/
+	path = lib/gaia
 	url = https://github.com/MTG/gaia.git
