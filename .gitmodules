@@ -2,7 +2,9 @@
 	path = lib/gaia
 	url = https://github.com/MTG/gaia.git
 	branch = master
+	ignore = dirty
 [submodule "lib/essentia"]
 	path = lib/essentia
 	url = https://github.com/MTG/essentia.git
 	branch = master
+	ignore = dirty
