@@ -1,0 +1,2 @@
+import essentia
+import _essentia_framecount

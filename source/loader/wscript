@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import sys
+import os
+
+# This is a list of 1- or 2-tuples. The first element is the name of
+# the source file (less the .cpp extension) and is also used as the
+# binary name. The second element (if it exists) is a list of
+# additional files for the extractor
+sources = [
+]
+
+#sources = [
+#        ('demo1', ['demo_util', 'demo_process'] )
+#]
+
+lib_sources = []
+
+def options(ctx):
+    ctx.add_option('--with-python', action='store_true',
+                   dest='WITH_PYTHON', default=False,
+                   help='build the python bindings')
+
+
+def configure(ctx):
+    ctx.env.WITH_PYTHON          = ctx.options.WITH_PYTHON
+
+    if ctx.env.WITH_PYTHON:
+        ctx.recurse('python')
+
+    ctx.check_cfg(package='essentia', uselib_store='ESSENTIA',
+        args=['--cflags', '--libs', '--modversion'], mandatory=True)
+
+def build(ctx):
+    print('→ building from ' + ctx.path.abspath())
+
+    def build_example(prog_name, other=None):
+        files = ['%s.cpp' % f for f in [prog_name] + (other or [])]
+
+        # If an `other` program has files in a directory we need
+        # to add an aditional includes
+        includes = ['.']
+
+        ctx.program(source  = ctx.path.ant_glob(' '.join(files)),
+                    target  = prog_name,
+                    includes = includes,
+                    use      = 'ESSENTIA',
+                    install_path = '${PREFIX}/bin')
+
+    for e in sources:
+        if len(e) == 1:
+            build_example(e[0])
+        elif len(e) == 2:
+            build_example(e[0], e[1])
+
+    ctx.shlib(
+        source   = [ctx.path.find_resource('frames.cpp')],
+        target   = 'framecount',
+        use      = 'ESSENTIA',
+        cxxflags = [ '-w' ],
+        install_path = '${PREFIX}/lib'
+    )
+
+
+    ctx.add_group()
+
+    if ctx.env.WITH_PYTHON:
+        ctx.recurse('python')
