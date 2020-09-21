@@ -124,9 +124,16 @@ int main(int argc, char* argv[])
   
   Algorithm* mono = AlgorithmFactory::create("MonoMixer",
 		                             "type", "left");
-  mono->input(stereoPool.value<vector<StereoSample>>("audio")).set(monoPool);
-  mono->process();
+
+  loader->output("audio") >> mono->input("audio");
+  //mono->input(stereoPool.value<vector<StereoSample>>("audio")) >> PC(monoPool, "audio");
+  //mono->process();
   mono->output("audio") >> PC(monoPool, "monoaudio");
+
+  Network m(mono);
+  m.run();
+
+  //mono->output("audio") >> PC(monoPool, "monoaudio");
 
   cout << "Mono Audio Data:\n" << monoPool.value<vector<Real>>("monoaudio") << endl;
   
@@ -145,6 +152,7 @@ int main(int argc, char* argv[])
   }
   
   n.clear();
+  m.clear();
 
   essentia::shutdown();
 
