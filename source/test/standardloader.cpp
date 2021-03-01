@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
   //} 
   
   vector<Real> audioBuffer = stereoPool.value<vector<StereoSample>>("audio");
-  float samplerate = stereoPool.value<Real>("samplerate"; 
+  float samplerate = stereoPool.value<Real>("samplerate"); 
   int noofchannels = (int)stereoPool.value<Real>("channels");
   string md5sum = stereoPool.value<string>("md5");
   string codec = stereoPool.value<string>("codec");

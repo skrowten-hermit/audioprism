@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2006-2016  Music Technology Group - Universitat Pompeu Fabra
+ *******************************************************************************
  *
- * This file is part of Essentia
+ * This file is part of AudioPrism Project.
  *
- * Essentia is free software: you can redistribute it and/or modify it under
+ * AudioPrism is a free software: you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License as published by the Free
  * Software Foundation (FSF), either version 3 of the License, or (at your
  * option) any later version.
@@ -15,48 +15,78 @@
  *
  * You should have received a copy of the Affero GNU General Public License
  * version 3 along with this program.  If not, see http://www.gnu.org/licenses/
+ * 
+ *******************************************************************************
+ * 
+ * File         : source/loader/audioloader.h.
+ * Description  : Functions to load and extract audio streams from a audio file.
+ * Created On   : 15-09-2020.
+ * Author       : Sreekanth Sreekumar.
+ * Modified On  : 28-11-2020.
+ * Modified By  : Sreekanth Sreekumar.
+ * Changes Made : File header, description added.
+ * 
+ *******************************************************************************
+ * 
  */
 
-#include "credits/libav.h"
-#include <essentia/algorithmfactory.h>
-#include <essentia/streaming/algorithms/poolstorage.h>
-#include <essentia/scheduler/network.h>
 
-#ifndef DEFAULT_INPUT
-#define DEFAULT_INPUT "../../lib/essentia/test/audio/recorded/cat_purrrr.wav"
-#endif
-
-#ifndef DEFAULT_OUTPUT
-#define DEFAULT_OUTPUT "loadresults.yaml"
-#endif
-
-using namespace std;
-using namespace essentia;
-using namespace essentia::streaming;
-using namespace essentia::scheduler;
 
 #ifndef AUDIOLOAD_H
 #define AUDIOLOAD_H
 
+
+#include "apstdh.hpp"
+#include "apessh.hpp"
+#include "constref.h"
+
+
 class AudioLoad
 {
   private:
-    string audioFile = DEFAULT_INPUT;
-    string outputFile = DEFAULT_OUTPUT;
+    std::string audioFile = DEFAULT_INPUT;
+    std::string outputFile = DEFAULT_LOUTPUT;
     int saveOutput = 0;
+
+    esstd::AlgorithmFactory& AF;
+
+    esstd::Algorithm* Loader;
+    esstd::Algorithm* MonoData;
+    esstd::Algorithm* Output;
+
+    std::vector<Real> MonoBuffer;
+    std::vector<Real> LeftBuffer, RightBuffer;
+    std::vector<StereoSample> Buffer, AudioBuffer, StereoBuffer;
     
-    Pool stereoPool;
-    Pool leftPool;
-    Pool rightPool;
-    Pool monoPool;
+    Real SampleRate;
+    Real Channels;
+    Real BitRate;
+    std::string md5sum;
+    std::string Codec;
+
+    Pool audioData;
+    Pool audioInfo;
   
   public:
-    AudioLoad(string inFile, string outFile);
-    void GetAudioData(string inFile);
-    void GetStereoChannel(string inFile);
-    void GetMonoChannel(string inFile, string source);
-    void GetLeftChannel(string inFile);
-    void GetRightChannel(string inFile);
+    std::string fileTag;
+    Pool loadPool;
+    
+    // Initialization and de-initialization of the loader class.
+    AudioLoad(esstd::AlgorithmFactory& saf, std::string inFile, 
+              std::string outFile, std::string description, int saveData);
+    ~AudioLoad();
+
+    // Functions for processing data of the loader class.
+    std::vector<StereoSample> GetAudioData();
+    std::vector<Real> GetMonoData();
+    std::vector<Real> GetLeftChannel();
+    std::vector<Real> GetRightChannel();
+    
+    // Functions for storing the attributes data in a pool data structure.
+    Pool StoreAudio();
+    Pool StoreAudio(std::string description, int split); // (for file printing)
+
 };
+
 
 #endif

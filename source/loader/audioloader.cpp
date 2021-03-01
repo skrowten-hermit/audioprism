@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2006-2016  Music Technology Group - Universitat Pompeu Fabra
+ *******************************************************************************
+ * 
+ * This file is part of AudioPrism Project.
  *
- * This file is part of Essentia
- *
- * Essentia is free software: you can redistribute it and/or modify it under
+ * AudioPrism is a free software: you can redistribute it and/or modify it under
  * the terms of the GNU Affero General Public License as published by the Free
  * Software Foundation (FSF), either version 3 of the License, or (at your
  * option) any later version.
@@ -15,178 +15,162 @@
  *
  * You should have received a copy of the Affero GNU General Public License
  * version 3 along with this program.  If not, see http://www.gnu.org/licenses/
+ * 
+ *******************************************************************************
+ * 
+ * File         : source/loader/audioloader.cpp.
+ * Description  : Functions to load and extract audio streams from a audio file.
+ * Created On   : 15-09-2020.
+ * Author       : Sreekanth Sreekumar.
+ * Modified On  : 28-11-2020.
+ * Modified By  : Sreekanth Sreekumar.
+ * Changes Made : File header, description added.
+ * 
+ *******************************************************************************
+ * 
  */
 
-#include <iostream>
+
 #include "audioloader.h"
 
 // AudioLoad Constructor for initialization.
-AudioLoad::AudioLoad(string inFile, string outFile)
-{
-  audioFile = inFile;
-  
-  if (outFile != "")
-  {
-    saveOutput = 1;
-  }
-  
-  outputFile = outFile;
-  
-  essentia::init();
+AudioLoad::AudioLoad(esstd::AlgorithmFactory& saf, std::string inFile, 
+                     std::string outFile, std::string description, int saveData)
+                    : audioFile(inFile), outputFile(outFile), 
+                    saveOutput(saveData), AF(saf), fileTag(description)
+{ 
+  //essentia::init();
+
+  AudioBuffer = GetAudioData();
+  MonoBuffer = GetMonoData();
+
+  loadPool = StoreAudio();
 }
 
 // Get the audio signal data and details from a given audio file.
-void AudioLoad::GetAudioData(string inFile)
+std::vector<StereoSample> AudioLoad::GetAudioData()
 {
-  AlgorithmFactory& factory = AlgorithmFactory::instance();
-  Algorithm* loader =  factory.create("AudioLoader",
-		                      "filename", audioFileName,
-				      "computeMD5", true);
+  Real srate;
+  int chnls;
+  int brate;
+  std::string md5s;
+  std::string codec; 
   
-  loader->output("audio") >> PC(stereoPool, "audio");
-  loader->output("sampleRate") >> PC(stereoPool, "samplerate");
-  loader->output("numberChannels") >> PC(stereoPool, "channels");
-  loader->output("md5") >> PC(stereoPool, "md5");
-  loader->output("codec") >> PC(stereoPool, "codec");
-  loader->output("bit_rate") >> PC(stereoPool, "bit_rate");
-
-  Network n(loader);
-  n.run();
-}
-
-// Get a stereo audio signal data from a given audio file.
-void AudioLoad::GetStereoChannel(string inFile)
-{
-  GetAudioData(inFile);
-}
-
-// Get a mono audio signal data from a given audio file - channel source can be chosen(using MonoMixer).
-void AudioLoad::GetMonoChannel(string inFile, string source)
-{
-  GetStereoChannel(inFile);
-}
-
-// Get the left channel of a stereo audio signal from a given audio file.
-void AudioLoad::GetLeftChannel(string inFile)
-{
-  GetStereoChannel(inFile);
+  Loader =  AF.create("AudioLoader", "filename", audioFile, "computeMD5", true);
   
-  for(int i = 0; i < stereoPool.value<vector<StereoSample>>("audio").size(); ++i) 
+  Loader->output("audio").set(Buffer);
+  Loader->output("sampleRate").set(srate);
+  Loader->output("numberChannels").set(chnls);
+  Loader->output("md5").set(md5s);
+  Loader->output("codec").set(codec);
+  Loader->output("bit_rate").set(brate);
+
+  Loader->compute();
+
+  delete Loader;
+
+  return Buffer;
+}
+
+// Get a mono audio signal data from a given audio file - channel source can be 
+// chosen (using MonoMixer).
+std::vector<Real> AudioLoad::GetMonoData()
+{
+  std::vector<Real> MonoStream;
+
+  esstd::Algorithm* MonoData;
+  MonoData = AF.create("MonoMixer", "type", "left");
+
+  MonoData->input("audio").set(AudioBuffer);
+  MonoData->input("numberChannels").set(Channels);
+  MonoData->output("audio").set(MonoStream);
+
+  MonoData->compute();
+
+  delete MonoData;
+
+  return MonoStream;
+}
+
+/* // Get the left channel of a stereo audio signal from a given audio file.
+std::vector<Real> AudioLoad::GetLeftChannel()
+{
+  for(int i = 0; 
+      i < audioData.value<std::vector<StereoSample>>("audio").size(); ++i)
   {
-    stereoPool.value<vector<StereoSample>>("audio")[i].left() >> PC(leftPool, "leftstream");
+    audioData.value<std::vector<StereoSample>>("audio")[i].left() >> 
+    PC(audioData, "LeftChannel");
   }
 }
 
 // Get the right channel of a stereo audio signal from a given audio file.
-void AudioLoad::GetRightChannel(string inFile)
+std::vector<Real> AudioLoad::GetRightChannel()
 {
-  GetStereoChannel(inFile);
-
-  for(int i = 0; i < stereoPool.value<vector<StereoSample>>("audio").size(); ++i)
+  for(int i = 0; 
+      i < audioData.value<std::vector<StereoSample>>("audio").size(); ++i)
   {
-    stereoPool.value<vector<StereoSample>>("audio")[i].right() >> PC(rightPool, "rightstream");
+    audioData.value<std::vector<StereoSample>>("audio")[i].right() >> 
+    PC(audioData, "RightChannel");
   }
+} */
+
+// Store all the audio data in a Pool data structure.
+Pool AudioLoad::StoreAudio()
+{
+  Pool aPool;
+
+  // Pool function add()/set() don't support a vector of SteroSample type.
+  // audioData.set("Audio", AudioBuffer);
+  audioData.set("MonoAudio", MonoBuffer);
+
+  audioInfo.set("Channels", Channels);
+  audioInfo.set("md5sum", md5sum);
+  audioInfo.set("SampleRate", SampleRate);
+  audioInfo.set("BitRate", BitRate);
+  audioInfo.set("Codec", Codec);
+
+  aPool.merge(audioInfo);
+  aPool.merge(audioData);
+
+  return aPool;
 }
 
-int main(int argc, char* argv[])
+// Store (for file printing) all the audio data in a Pool data structure.
+Pool AudioLoad::StoreAudio(std::string description, int split)
 {
-  string audioFileName = DEFAULT_INPUT;
-  string outputFileName = "results.yaml";
-  int outfile = 0;
-  
-  if (argc < 2)
+  Pool aPool;
+
+  // Pool function add()/set() don't support a vector of SteroSample type.
+  // audioData.set(fileTag + ".Audio", AudioBuffer); 
+  audioData.set(fileTag + ".MonoAudio", MonoBuffer);
+
+  audioInfo.set(fileTag + ".Channels", Channels);
+  audioInfo.set(fileTag + ".md5sum", md5sum);
+  audioInfo.set(fileTag + ".SampleRate", SampleRate);
+  audioInfo.set(fileTag + ".BitRate", BitRate);
+  audioInfo.set(fileTag + ".Codec", Codec);
+
+  aPool.merge(audioInfo);
+  aPool.merge(audioData);
+
+  if (split == 1)
   {
-    cout << "Error: incorrect number of arguments." << endl;
-    cout << "Usage: " << argv[0] << " audio_input yaml_output[OPTIONAL]" << endl;
-    creditLibAV();
-    cout << "Using the default file : " << audioFileName << endl;
-  }
-  else if (argc == 2)
-  {
-    audioFileName = argv[1];
-  }
-  else
-  {
-    outfile = 1;
-    audioFileName = argv[1];
-    outputFileName = argv[2];
-  }
-
-  // Register the algorithm in the factory(ies).
-  essentia::init();
-
-  Pool stereoPool;
-  Pool leftPool;
-  Pool rightPool;
-
-  AlgorithmFactory& factory = AlgorithmFactory::instance();
-  Algorithm* loader =  factory.create("AudioLoader",
-		                      "filename", audioFileName,
-				      "computeMD5", true);
-  
-  loader->output("audio") >> PC(stereoPool, "audio");
-  loader->output("sampleRate") >> PC(stereoPool, "samplerate");
-  loader->output("numberChannels") >> PC(stereoPool, "channels");
-  loader->output("md5") >> PC(stereoPool, "md5");
-  loader->output("codec") >> PC(stereoPool, "codec");
-  loader->output("bit_rate") >> PC(stereoPool, "bit_rate");
-
-  Network n(loader);
-  n.run();
-
-  int noofchannels = (int)stereoPool.value<Real>("channels");
-  cout << "-------- Start Audio Data --------" << endl;
-  //vector<Real> audioBuffer = stereoPool.value<vector<StereoSample>>("audio");
-  if (noofchannels == 2)
-  {
-    cout << "Channel 0 :" << endl;
-    for(int i = 0; i < stereoPool.value<vector<StereoSample>>("audio").size(); ++i) 
-    {
-      cout << stereoPool.value<vector<StereoSample>>("audio")[i].left() << ", ";
-    }
+    std::cout << "-------- writing results to file " << outputFile 
+              << " --------" << std::endl;
     
-    cout << endl << "Channel 1 :" << endl;
-    for(int i = 0; i < stereoPool.value<vector<StereoSample>>("audio").size(); ++i)
-    {
-      cout << stereoPool.value<vector<StereoSample>>("audio")[i].right() << ", ";
-    }
-    cout << endl;
-  }
-  else
-  {
-    cout << "Audio Data (Only 1 channel --> Left) :" << endl;
-    for(int i = 0; i < stereoPool.value<vector<StereoSample>>("audio").size(); ++i)
-    {
-      cout << stereoPool.value<vector<StereoSample>>("audio")[i].left() << ", ";
-    }
-    cout << endl;
-  }
-  cout << "-------- End Audio Data --------" << endl;
+    Output = AF.create("YamlOutput", "filename", outputFile);
+    Output->input("pool").set(audioData);
+    Output->input("pool").set(audioInfo);
+    Output->compute();
 
-  //cout << "Audio Data:\n" << p.value<vector<StereoSample>>("audio") << endl;
-  cout << "Sample Rate: " << stereoPool.value<Real>("samplerate") << endl;
-  cout << "No. of Channels: " << noofchannels << endl;
-  cout << "md5sum: " << stereoPool.value<string>("md5") << endl;
-  cout << "Codec: " << stereoPool.value<string>("codec") << endl;
-  cout << "Bit Rate: " << (int)stereoPool.value<Real>("bit_rate") << endl;
-  
-  // write results to file
-  if (outfile == 1)
-  {
-    cout << "-------- writing results to file " << outputFileName << " --------" << endl;
-    
-    standard::Algorithm* output = standard::AlgorithmFactory::create("YamlOutput",
-		                                                     "filename", outputFileName);
-    
-    output->input("pool").set(stereoPool);
-    output->compute();
-    
-    delete output;
+    delete Output;
   }
-  
-  n.clear();
 
-  essentia::shutdown();
+  return aPool;
+}
 
-  return 0;
+// AudioLoad Destructor for closure.
+AudioLoad::~AudioLoad()
+{
+  //essentia::shutdown();
 }
