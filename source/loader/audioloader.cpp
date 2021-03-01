@@ -67,6 +67,12 @@ std::vector<StereoSample> AudioLoad::GetAudioData()
 
   Loader->compute();
 
+  Channels = (Real) chnls;
+  SampleRate = srate;
+  BitRate = (Real) brate;
+  md5sum = md5s;
+  Codec = codec;
+
   delete Loader;
 
   return Buffer;
@@ -77,12 +83,13 @@ std::vector<StereoSample> AudioLoad::GetAudioData()
 std::vector<Real> AudioLoad::GetMonoData()
 {
   std::vector<Real> MonoStream;
+  int chnls;
 
   esstd::Algorithm* MonoData;
   MonoData = AF.create("MonoMixer", "type", "left");
 
   MonoData->input("audio").set(AudioBuffer);
-  MonoData->input("numberChannels").set(Channels);
+  MonoData->input("numberChannels").set(chnls);
   MonoData->output("audio").set(MonoStream);
 
   MonoData->compute();
