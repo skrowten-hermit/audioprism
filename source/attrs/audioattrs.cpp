@@ -37,8 +37,9 @@
 AudioAttrs::AudioAttrs(esstd::AlgorithmFactory& saf, 
                        std::vector<Real> audioSigVector, 
                        Pool attrPool, std::string description, 
-                       int saveData) : AF(saf), signalVector(audioSigVector), 
-                       fileTag(description)
+                       int saveData, bool conOut) : saveOutput(saveData), 
+                      consoleOut(conOut), AF(saf), signalVector(audioSigVector), 
+                      fileTag(description)
 {
   //essentia::init();
   

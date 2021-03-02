@@ -46,6 +46,7 @@ class AudioVerify
   private:
     std::string outputFile = DEFAULT_VOUTPUT;
     int saveOutput = 0;
+    bool consoleOut = false;
 
     esstd::AlgorithmFactory& AF;
 
@@ -80,7 +81,7 @@ class AudioVerify
     AudioVerify(esstd::AlgorithmFactory& saf, 
                 std::vector<Real> source, std::vector<Real> sink, 
                 Pool srcAttrs, Pool snkAttrs, 
-                std::string description, int saveData);
+                std::string description, int saveData, bool conOut);
     ~AudioVerify();
 
     // Functions for processing data of the verifier class.

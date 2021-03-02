@@ -39,9 +39,10 @@ AudioVerify::AudioVerify(esstd::AlgorithmFactory& saf,
                          std::vector<Real> source, 
                          std::vector<Real> sink, 
                          Pool srcAttrs, Pool snkAttrs, 
-                         std::string outFile, int saveData) : 
-                         outputFile(outFile), saveOutput(saveData), AF(saf), 
-                         sourceSignal(source), sinkSignal(sink)
+                         std::string outFile, int saveData, bool conOut) : 
+                        outputFile(outFile), saveOutput(saveData), 
+                        consoleOut(conOut), AF(saf), sourceSignal(source), 
+                        sinkSignal(sink)
                          
 {
   //essentia::init();

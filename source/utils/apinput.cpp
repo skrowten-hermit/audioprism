@@ -142,6 +142,7 @@ inProps inputOpts::storeInConfig()
 
 void inputOpts::dispInputOpts()
 {
+  std::cout << std::endl;
   std::cout << "Source File Path : " << srcpath << std::endl;
   std::cout << "Sink File Path : " << snkpath << std::endl;
   std::cout << "Split Output Files : " << splitout << std::endl;

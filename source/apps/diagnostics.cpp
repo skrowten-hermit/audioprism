@@ -57,6 +57,9 @@ int main(int argc, char** argv)
   // The following stores each user input in and as a struct data structure.
   inProps inConfig = inOpts.storeInConfig();
 
+  if (inConfig.icf.cout == true)
+    inOpts.dispInputOpts();
+
   essentia::init();
 
   esstd::AlgorithmFactory& stdAF = esstd::AlgorithmFactory::instance();
@@ -64,14 +67,14 @@ int main(int argc, char** argv)
   srcDescr = getFileName(inConfig.icd.src);
 
   AudioLoad srcLoader(stdAF, inConfig.icd.src, inConfig.icd.lofile, srcDescr,
-                      inConfig.icf.lout);
+                      inConfig.icf.lout, inConfig.icf.cout);
 
   std::vector<Real> sourceBuffer = srcLoader.GetMonoData();
   
   Pool srcLPool = srcLoader.loadPool;
 
   AudioAttrs srcAttrs(stdAF, sourceBuffer, srcLPool, srcDescr, 
-                      inConfig.icf.aout);
+                      inConfig.icf.aout, inConfig.icf.cout);
 
   Pool sourceAttrs = srcAttrs.audioAttrs;
   std::string adescr = srcAttrs.audioAttrs.value<std::string>("Description");
@@ -79,7 +82,8 @@ int main(int argc, char** argv)
   sourceAttrs.set("Description", adescr);
   sourceAttrs.set("SampleRate", samplerate);
 
-  AudioBug srcDiagnose(stdAF, sourceBuffer, sourceAttrs, inConfig.icf.dout);
+  AudioBug srcDiagnose(stdAF, sourceBuffer, sourceAttrs, inConfig.icf.dout,
+                       inConfig.icf.cout);
   
   Pool sourceBugs = srcDiagnose.defectsData;
 

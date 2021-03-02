@@ -46,6 +46,7 @@ class AudioAttrs
   private:
     std::string outputFile = DEFAULT_AOUTPUT;
     int saveOutput = 0;
+    bool consoleOut = false;
 
     esstd::AlgorithmFactory& AF;
 
@@ -84,7 +85,7 @@ class AudioAttrs
     // Initialization and de-initialization of the attribute class.
     AudioAttrs(esstd::AlgorithmFactory& saf, 
                std::vector<Real> audioSigVector, Pool attrPool, 
-               std::string description, int saveData);
+               std::string description, int saveData, bool conOut);
     ~AudioAttrs();
 
     // Functions for processing data of the attribute class.

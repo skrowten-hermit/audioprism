@@ -47,6 +47,7 @@ class AudioLoad
     std::string audioFile = DEFAULT_INPUT;
     std::string outputFile = DEFAULT_LOUTPUT;
     int saveOutput = 0;
+    bool consoleOut = false;
 
     esstd::AlgorithmFactory& AF;
 
@@ -56,7 +57,12 @@ class AudioLoad
 
     std::vector<Real> MonoBuffer;
     std::vector<Real> LeftBuffer, RightBuffer;
-    std::vector<StereoSample> Buffer, AudioBuffer, StereoBuffer;
+    std::vector<StereoSample> AudioBuffer, StereoBuffer;
+
+    long unsigned int BSize = 0; 
+    long unsigned int MBSize = 0;
+    long unsigned int ABSize = 0;
+    long unsigned int SBSize = 0;
     
     Real SampleRate;
     Real Channels;
@@ -73,7 +79,8 @@ class AudioLoad
     
     // Initialization and de-initialization of the loader class.
     AudioLoad(esstd::AlgorithmFactory& saf, std::string inFile, 
-              std::string outFile, std::string description, int saveData);
+              std::string outFile, std::string description, int saveData,
+              bool conOut);
     ~AudioLoad();
 
     // Functions for processing data of the loader class.
@@ -85,6 +92,10 @@ class AudioLoad
     // Functions for storing the attributes data in a pool data structure.
     Pool StoreAudio();
     Pool StoreAudio(std::string description, int split); // (for file printing)
+
+    // Function to display calculated parameters on console.
+    void projectData();
+    void printPool();
 
 };
 

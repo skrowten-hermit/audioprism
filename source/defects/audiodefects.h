@@ -46,6 +46,7 @@ class AudioBug
   private:
     std::string outputFile = DEFAULT_DOUTPUT;
     int saveOutput = 0;
+    bool consoleOut = false;
 
     esstd::AlgorithmFactory& AF;
 
@@ -75,7 +76,7 @@ class AudioBug
     
     // Initialization and de-initialization of the defects class.
     AudioBug(esstd::AlgorithmFactory& saf, std::vector<Real> audioSigVector, 
-             Pool audioAttrs, int saveData);
+             Pool audioAttrs, int saveData, bool conOut);
     ~AudioBug();
 
     // Functions for processing data of the defects class.
