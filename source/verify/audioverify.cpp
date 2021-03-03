@@ -46,8 +46,8 @@ AudioVerify::AudioVerify(esstd::AlgorithmFactory& saf,
 {
   //essentia::init();
 
-  std::string srcDescr = srcAttrs.value<std::string>("Description");
-  std::string snkDescr = snkAttrs.value<std::string>("Description");
+  srcDescr = srcAttrs.value<std::string>("Description");
+  snkDescr = snkAttrs.value<std::string>("Description");
   
   std::cout << std::endl << "Acquired signal vectors length :" << std::endl;
   std::cout << "Source signal samples : " << sourceSignal.size() << std::endl;
@@ -76,7 +76,7 @@ AudioVerify::AudioVerify(esstd::AlgorithmFactory& saf,
   RMSMatch = CalcRMSMatch();
   audioExists = AudioExists();
 
-  verifyData = SetVerifyData(srcDescr, snkDescr, saveOutput);
+  verifyData = SetVerifyData();
 
   if (consoleOut == true)
   {
@@ -102,6 +102,8 @@ std::vector<Real> AudioVerify::CalcCCFSeq()
   sourceVarAlgo = AF.create("Variance");
   sinkVarAlgo = AF.create("Variance");
 
+  ccfAlgo->input("arrayX").set(sourceSignal);
+  ccfAlgo->input("arrayY").set(sinkSignal);
   ccfAlgo->output("crossCorrelation").set(corrVector);
 
   ccfAlgo->compute();
@@ -234,13 +236,13 @@ Pool AudioVerify::SetVerifyData(std::string srcDescr,
   // audioCrossCorrSeq.
   Pool vPool;
 
-  vPool.set(srcDescr + "-->" + snkDescr + ".AudioExists", audioExists);
-  vPool.set(srcDescr + "-->" + snkDescr + ".CorrVector", corrVector);
-  vPool.set(srcDescr + "-->" + snkDescr + ".CorrVectorSize", xCorrSize);
-  vPool.set(srcDescr + "-->" + snkDescr + ".CorrVectorPeak", 
+  vPool.set(srcDescr + "--x--" + snkDescr + ".AudioExists", audioExists);
+  vPool.set(srcDescr + "--x--" + snkDescr + ".CorrVector", corrVector);
+  vPool.set(srcDescr + "--x--" + snkDescr + ".CorrVectorSize", xCorrSize);
+  vPool.set(srcDescr + "--x--" + snkDescr + ".CorrVectorPeak", 
                  corrVectorPeak);
-  vPool.set(srcDescr + "-->" + snkDescr + ".GainFactor", gainFactor);
-  vPool.set(srcDescr + "-->" + snkDescr + ".RMSMatch", RMSMatch);
+  vPool.set(srcDescr + "--x--" + snkDescr + ".GainFactor", gainFactor);
+  vPool.set(srcDescr + "--x--" + snkDescr + ".RMSMatch", RMSMatch);
 
   if (split == 1)
   {
@@ -301,5 +303,5 @@ void AudioVerify::printPool()
 // AudioVerify Destructor for closure.
 AudioVerify::~AudioVerify()
 {
-  // 
+  // essentia::shutdown();
 }

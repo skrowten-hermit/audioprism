@@ -41,8 +41,8 @@ AudioBug::AudioBug(esstd::AlgorithmFactory& saf,
 {
   //essentia::init();
 
-  std::string fileTag = attrs.value<std::string>("Description");
-  Real SampleRate = attrs.value<Real>("SampleRate");
+  fileTag = attrs.value<std::string>("Description");
+  SampleRate = attrs.value<Real>("SampleRate");
   
   std::cout << std::endl;
   std::cout << "Identifying Audio Signal Defects in " << fileTag << "...." << 

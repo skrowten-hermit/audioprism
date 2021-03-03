@@ -41,6 +41,10 @@ void generateResults(Pool outputPool)
   std::map<std::string, Real> rsdescr = outputPool.getSingleRealPool();
   std::map<std::string, std::vector<std::string>> svdescr = outputPool.getStringPool();
   std::map<std::string, std::string> ssdescr = outputPool.getSingleStringPool();
+  
+  std::cout << std::endl;
+  std::cout << "Printing the results..." << std::endl;
+  std::cout << std::endl;
 
   for(auto elem : rvdescr)
   {
@@ -66,4 +70,8 @@ void generateResults(Pool outputPool)
   {
     std::cout << elem.first << " --> " << elem.second << std::endl;
   }
+  
+  std::cout << std::endl;
+  std::cout << "The End of results..." << std::endl;
+  std::cout << std::endl;
 }

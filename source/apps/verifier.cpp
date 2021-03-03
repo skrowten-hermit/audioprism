@@ -66,19 +66,20 @@ int main(int argc, char** argv)
   snkDescr = getFileName(inConfig.icd.snk);
 
   AudioLoad srcLoader(stdAF, inConfig.icd.src, inConfig.icd.lofile, srcDescr,
-                      inConfig.icf.lout);
+                      inConfig.icf.lout, inConfig.icf.cout);
   AudioLoad snkLoader(stdAF, inConfig.icd.snk, inConfig.icd.lofile, snkDescr,
-                      inConfig.icf.lout);
+                      inConfig.icf.lout, inConfig.icf.cout);
 
-  std::vector<Real> sourceBuffer = srcLoader.GetMonoData();
-  std::vector<Real> sinkBuffer = snkLoader.GetMonoData();
+  std::vector<Real> sourceBuffer = srcLoader.MonoBuffer;
+  std::vector<Real> sinkBuffer = snkLoader.MonoBuffer;
   
   Pool srcLPool = srcLoader.loadPool;
   Pool snkLPool = snkLoader.loadPool;
 
   AudioAttrs srcAttrs(stdAF, sourceBuffer, srcLPool, srcDescr, 
-                      inConfig.icf.aout);
-  AudioAttrs snkAttrs(stdAF, sinkBuffer, snkLPool, snkDescr, inConfig.icf.aout);
+                      inConfig.icf.aout, inConfig.icf.cout);
+  AudioAttrs snkAttrs(stdAF, sinkBuffer, snkLPool, snkDescr, inConfig.icf.aout, 
+                      inConfig.icf.cout);
 
   Pool sourceAttrs = srcAttrs.audioAttrs;
   std::string srcdescr = srcAttrs.audioAttrs.value<std::string>("Description");
@@ -91,16 +92,18 @@ int main(int argc, char** argv)
   sinkAttrs.set("Description", snkdescr);
   sinkAttrs.set("SampleRate", snksamplerate);
 
-
   AudioVerify validate(stdAF, sourceBuffer, sinkBuffer, sourceAttrs, sinkAttrs, 
-                       inConfig.icd.vofile, inConfig.icf.vout);
+                       inConfig.icd.vofile, inConfig.icf.vout, 
+                       inConfig.icf.cout);
 
-  Pool verifierOut = validate.verifyData;
+  Pool srcAttrsOut = srcAttrs.StoreAttrs(srcdescr, inConfig.icf.aout);
+  Pool snkAttrsOut = snkAttrs.StoreAttrs(snkdescr, inConfig.icf.aout);
+  Pool verifierOut = validate.SetVerifyData(srcdescr, snkdescr, inConfig.icf.vout);
 
   Pool gatherData;
 
-  gatherData.merge(sourceAttrs);
-  gatherData.merge(sinkAttrs);
+  gatherData.merge(srcAttrsOut);
+  gatherData.merge(snkAttrsOut);
   gatherData.merge(verifierOut);
 
   generateResults(gatherData);

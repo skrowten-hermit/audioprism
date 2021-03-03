@@ -50,6 +50,9 @@ AudioAttrs::AudioAttrs(esstd::AlgorithmFactory& saf,
   SampleSize = signalVector.size();
   SampleRate = attrPool.value<Real>("SampleRate");
   Channels = attrPool.value<Real>("Channels");
+  BitRate = attrPool.value<Real>("BitRate");
+  md5sum = attrPool.value<std::string>("md5sum");
+  Codec = attrPool.value<std::string>("Codec");
 
   signalAutoCorr = CalcACFSeq();
   signalFreqBandEnergy = GetFreqComponents();
