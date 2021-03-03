@@ -61,6 +61,15 @@ class AudioAttrs
     esstd::Algorithm* Output;
 
     std::vector<Real> signalVector, signalAutoCorr;
+    std::vector<Real> signalFFT, signalFreqBandEnergy, signalPSD;
+    std::vector<Real> FreqBands {0, 50, 100, 150, 200, 300, 400, 510, 
+                                 630, 770, 920, 1080, 1270, 1480, 1720,
+                                 2000, 2320, 2700, 3150, 3700, 4400, 
+                                 5300, 6400, 7700, 9500, 12000, 15500, 
+                                 20500, 27000};
+    
+    long unsigned int sigACFSize = 0, sigPSDSize = 0, sigFFTSize = 0;
+    long unsigned int numFreqBands = 0;
     
     Real SampleRate;
     Real Channels;
@@ -70,13 +79,6 @@ class AudioAttrs
     std::string Codec;
     
     Real signalF0, signalRMS, signalSNR, signalLoudness;
-    
-    std::vector<Real> FreqBands {0, 50, 100, 150, 200, 300, 400, 510, 
-                                 630, 770, 920, 1080, 1270, 1480, 1720,
-                                 2000, 2320, 2700, 3150, 3700, 4400, 
-                                 5300, 6400, 7700, 9500, 12000, 15500, 
-                                 20500, 27000};
-    std::vector<Real> signalFFT, signalFreqBandEnergy, signalPSD;
     
   public:
     std::string fileTag;
@@ -104,6 +106,10 @@ class AudioAttrs
     // Functions for storing the attributes data in a pool data structure.
     Pool StoreAttrs();
     Pool StoreAttrs(std::string description, int split); // (for file printing)
+
+    // Function to display calculated parameters on console.
+    void projectData();
+    void printPool();
     
 };
 

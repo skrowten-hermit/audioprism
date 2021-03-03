@@ -61,9 +61,9 @@ class AudioBug
     std::vector<Real> gapStarts, gapEnds;
     std::vector<Real> nbIndexes;
     
-    int numClicks = 0;
-    int numGaps = 0;
-    int numNBSamples = 0;
+    long unsigned int clickStartsLen = 0, clickEndsLen = 0;
+    long unsigned int gapStartsLen = 0, gapEndsLen = 0;
+    long unsigned int numClicks = 0, numGaps = 0, numNBSamples = 0;
 
     int clickExists = 0;
     int gapsExists = 0;
@@ -72,6 +72,7 @@ class AudioBug
     Real SampleRate;
 
   public:
+    std::string fileTag;
     Pool defectsData;
     
     // Initialization and de-initialization of the defects class.
@@ -97,6 +98,10 @@ class AudioBug
     // Functions for storing the defects data in a pool data structure.
     Pool SetDefectInfo();
     Pool SetDefectInfo(std::string description, int split);
+
+    // Function to display calculated parameters on console.
+    void projectData();
+    void printPool();
     
 };
 

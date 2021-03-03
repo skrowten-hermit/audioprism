@@ -57,11 +57,18 @@ class AudioVerify
 
     std::vector<Real> sourceSignal;
     std::vector<Real> sinkSignal;
+    std::vector<Real> corrVector;
+
     
     std::vector<Real> audioCrossCorrSeq;
     
-    int sourceSize, sinkSize, xCorrSize;
+    long unsigned int sourceSize = 0, sinkSize = 0;
+    long unsigned int xCorrVecSize = 0, xCorrSize = 0;
     Real corrVectorPeak;
+    
+    Real sourceVar, sinkVar;
+    Real sourceStdDev, sinkStdDev;
+    Real xcorrNormFactor;
     
     int audioExists = 0;
     
@@ -94,6 +101,10 @@ class AudioVerify
     // Functions for storing the attributes data in a pool data structure.
     Pool SetVerifyData();
     Pool SetVerifyData(std::string srcDescr, std::string snkDescr, int split);
+
+    // Function to display calculated parameters on console.
+    void projectData();
+    void printPool();
 
 };
 

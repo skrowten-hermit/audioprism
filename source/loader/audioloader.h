@@ -55,7 +55,6 @@ class AudioLoad
     esstd::Algorithm* MonoData;
     esstd::Algorithm* Output;
 
-    std::vector<Real> MonoBuffer;
     std::vector<Real> LeftBuffer, RightBuffer;
     std::vector<StereoSample> AudioBuffer, StereoBuffer;
 
@@ -74,6 +73,8 @@ class AudioLoad
     Pool audioInfo;
   
   public:
+    std::vector<Real> MonoBuffer;
+    
     std::string fileTag;
     Pool loadPool;
     

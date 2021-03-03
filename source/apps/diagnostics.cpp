@@ -69,7 +69,7 @@ int main(int argc, char** argv)
   AudioLoad srcLoader(stdAF, inConfig.icd.src, inConfig.icd.lofile, srcDescr,
                       inConfig.icf.lout, inConfig.icf.cout);
 
-  std::vector<Real> sourceBuffer = srcLoader.GetMonoData();
+  std::vector<Real> sourceBuffer = srcLoader.MonoBuffer;
   
   Pool srcLPool = srcLoader.loadPool;
 

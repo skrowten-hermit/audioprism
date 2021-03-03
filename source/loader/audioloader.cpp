@@ -41,6 +41,9 @@ AudioLoad::AudioLoad(esstd::AlgorithmFactory& saf, std::string inFile,
                     fileTag(description)
 { 
   //essentia::init();
+  
+  std::cout << std::endl;
+  std::cout << "Loading Audio file " << audioFile << "...." << std::endl;
 
   AudioBuffer = GetAudioData();
   MonoBuffer = GetMonoData();
@@ -107,7 +110,7 @@ std::vector<Real> AudioLoad::GetMonoData()
   {
     std::cout << std::endl;
     std::cout << "Extracting Audio data from " << fileTag << "...." << 
-    std::endl;
+                 std::endl;
   }
 
   MonoData = AF.create("MonoMixer", "type", "left");
@@ -124,7 +127,7 @@ std::vector<Real> AudioLoad::GetMonoData()
 
   if (consoleOut == true)
     std::cout << "Audio data extracted from " << fileTag << " done...." << 
-    std::endl;
+                 std::endl;
 
   return MonoStream;
 }
@@ -160,7 +163,7 @@ Pool AudioLoad::StoreAudio()
   {
     std::cout << std::endl;
     std::cout << "Storing Audio data from " << audioFile << " internally...." 
-    << std::endl;
+              << std::endl;
   }
 
   // Pool function add()/set() don't support a vector of SteroSample type.
@@ -178,7 +181,7 @@ Pool AudioLoad::StoreAudio()
 
   if (consoleOut == true)
     std::cout << "Audio data from " << fileTag << " stored internally...." << 
-    std::endl;
+                 std::endl;
 
   return aPool;
 }
@@ -192,7 +195,7 @@ Pool AudioLoad::StoreAudio(std::string description, int split)
   {
     std::cout << std::endl;
     std::cout << "Storing Audio data from " << audioFile << " externally...." 
-    << std::endl;
+              << std::endl;
   }
 
   // Pool function add()/set() don't support a vector of SteroSample type.
@@ -223,12 +226,12 @@ Pool AudioLoad::StoreAudio(std::string description, int split)
 
   if (consoleOut == true)
     std::cout << "Audio data from " << fileTag << " stored externally...." << 
-    std::endl;
+                 std::endl;
 
   return aPool;
 }
 
-// Display the members of the AudioLoad class.
+// Print the members of the AudioLoad class to the console.
 void AudioLoad::projectData()
 {
   std::cout << std::endl;
@@ -242,7 +245,7 @@ void AudioLoad::projectData()
   std::cout << "Signal Size : " << MBSize << std::endl;
 }
 
-// Display the members of the AudioLoad class.
+// Display the data from the data structure on the console.
 void AudioLoad::printPool()
 {
   std::cout << std::endl;
@@ -252,7 +255,6 @@ void AudioLoad::printPool()
   std::cout << "Bit Rate : " << loadPool.value<Real>("BitRate") << std::endl;
   std::cout << "md5sum : " << loadPool.value<std::string>("md5sum") << std::endl;
   std::cout << "Codec : " << loadPool.value<std::string>("Codec") << std::endl;
-  
 }
 
 // AudioLoad Destructor for closure.

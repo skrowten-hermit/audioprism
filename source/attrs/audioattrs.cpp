@@ -43,6 +43,10 @@ AudioAttrs::AudioAttrs(esstd::AlgorithmFactory& saf,
 {
   //essentia::init();
   
+  std::cout << std::endl;
+  std::cout << "Audio signal parameter computation from " << fileTag << 
+               "...." << std::endl;
+  
   SampleSize = signalVector.size();
   SampleRate = attrPool.value<Real>("SampleRate");
   Channels = attrPool.value<Real>("Channels");
@@ -55,12 +59,25 @@ AudioAttrs::AudioAttrs(esstd::AlgorithmFactory& saf,
   signalLoudness = CalcLoudness();
 
   audioAttrs = StoreAttrs();
+
+  if (consoleOut == true)
+  {
+    projectData();
+    printPool();
+  }
 }
 
 // Get the auto-correlation function (ACF) for a given signal vector input.
 std::vector<Real> AudioAttrs::CalcACFSeq()
 {
   std::vector<Real> ACF;
+
+  if (consoleOut == true)
+  {
+    std::cout << std::endl;
+    std::cout << "Computing auto-correlation function from the signal for " << 
+    fileTag << "...." << std::endl;
+  }
 
   acfAlgo = AF.create("AutoCorrelation");
   
@@ -69,7 +86,13 @@ std::vector<Real> AudioAttrs::CalcACFSeq()
 
   acfAlgo->compute();
 
+  sigACFSize = signalAutoCorr.size();
+
   delete acfAlgo;
+
+  if (consoleOut == true)
+    std::cout << "Auto-correlation function computation for " << fileTag << " done...." << 
+    std::endl;
 
   // Return the ACF sequence.
 
@@ -89,6 +112,13 @@ Real AudioAttrs::GetF0Freq()
 std::vector<Real> AudioAttrs::GetFreqComponents()
 {
   std::vector<Real> FFT, FBE;
+
+  if (consoleOut == true)
+  {
+    std::cout << std::endl;
+    std::cout << "Extracting the frequency components from " << fileTag << 
+    "'s signal...." << std::endl;
+  }
   
   fftAlgo = AF.create("Spectrum");
   fbandsAlgo = AF.create("FrequencyBands", "sampleRate", SampleRate);
@@ -103,21 +133,37 @@ std::vector<Real> AudioAttrs::GetFreqComponents()
 
   fbandsAlgo->compute();
 
+  signalFFT = FFT;
+  signalFreqBandEnergy = FBE;
+  sigFFTSize = signalFFT.size();
+  numFreqBands = signalFreqBandEnergy.size();
+
   delete fftAlgo;
   delete fbandsAlgo;
+
+  if (consoleOut == true)
+    std::cout << "Frequency component extraction for " << fileTag << 
+    " done...." << std::endl;
 
   // Return an of frequencies.
 
   return FBE;
 }
 
-// Get the gain factor of the audio signal.
+// Get the power spectral density (PSD) of the audio signal.
 std::vector<Real> AudioAttrs::CalcPSD()
 {
   int frameSize = 2048;
   int hopSize = 1024;
   
   std::vector<Real> ACFrame, PSDFrame, PSDvector;
+
+  if (consoleOut == true)
+  {
+    std::cout << std::endl;
+    std::cout << "Calculating the power spectral density of " << fileTag << 
+    "'s signal...." << std::endl;
+  }
 
   fcAlgo = AF.create("FrameCutter", "frameSize", frameSize, "hopSize", hopSize);
   psdAlgo = AF.create("Spectrum");
@@ -142,18 +188,31 @@ std::vector<Real> AudioAttrs::CalcPSD()
     PSDvector.insert(PSDvector.end(), PSDFrame.begin(), PSDFrame.end());
   }
 
+  sigPSDSize = PSDvector.size();
+
   delete fcAlgo;
   delete psdAlgo;
+
+  if (consoleOut == true)
+    std::cout << "Power spectral density computation for " << fileTag <<
+    " done...." << std::endl;
 
   // Return the power spectral density.
 
   return PSDvector;
 }
 
-// Get the gain of the audio signal in dB.
+// Calculate the RMS of the audio signal vector.
 Real AudioAttrs::CalcRMS()
 {
   Real RMS;
+
+  if (consoleOut == true)
+  {
+    std::cout << std::endl;
+    std::cout << "Calculating the RMS of " << fileTag << "'s signal...." << 
+    std::endl;
+  }
 
   rmsAlgo = AF.create("RMS");
   
@@ -163,6 +222,9 @@ Real AudioAttrs::CalcRMS()
   rmsAlgo->compute();
 
   delete rmsAlgo;
+
+  if (consoleOut == true)
+    std::cout << "RMS computation for " << fileTag << " done...." << std::endl;
 
   // Return the root mean square of the signal.
 
@@ -177,6 +239,13 @@ Real AudioAttrs::CalcSNR()
   
   std::vector<Real> SNRFrame, SpectralSNR;
   Real avgSNR, instSNR;
+
+  if (consoleOut == true)
+  {
+    std::cout << std::endl;
+    std::cout << "Calculating the SNR from " << fileTag << "'s signal...." << 
+    std::endl;
+  }
 
   fcAlgo = AF.create("FrameCutter", "frameSize", frameSize, "hopSize", hopSize);
   snrAlgo = AF.create("SNR", "sampleRate", SampleRate, 
@@ -209,15 +278,25 @@ Real AudioAttrs::CalcSNR()
   delete fcAlgo;
   delete snrAlgo;
 
+  if (consoleOut == true)
+    std::cout << "SNR computation from " << fileTag << " done...." << std::endl;
+
   // Return the average SNR.
 
   return avgSNR;
 }
 
-// Get the SNR of the audio signal.
+// Calculate the Loudness factor of the audio signal.
 Real AudioAttrs::CalcLoudness()
 {
   Real sigLoudness;
+
+  if (consoleOut == true)
+  {
+    std::cout << std::endl;
+    std::cout << "Calculating the loudness factor from " << fileTag << 
+    "'s signal...." << std::endl;
+  }
   
   loudAlgo = AF.create("Loudness");
 
@@ -227,6 +306,10 @@ Real AudioAttrs::CalcLoudness()
   loudAlgo->compute();
 
   delete loudAlgo;
+
+  if (consoleOut == true)
+    std::cout << "Loudness factor computation from " << fileTag << " done...." 
+    << std::endl;
 
   // Return the Loudness metric.
 
@@ -282,6 +365,54 @@ Pool AudioAttrs::StoreAttrs(std::string description, int split)
   }
 
   return attrsPool;
+}
+
+// Print the members of the AudioLoad class to the console.
+void AudioAttrs::projectData()
+{
+  std::vector<Real> v = signalFreqBandEnergy;
+  std::cout << std::endl;
+  std::cout << "The following are data from " << fileTag << ":" << std::endl;
+  std::cout << "Sample Size : " << SampleSize << std::endl;
+  std::cout << "Channels : " << Channels << std::endl;
+  std::cout << "Sample Rate : " << SampleRate << std::endl;
+  std::cout << "Bit Rate : " << BitRate << std::endl;
+  std::cout << "md5sum : " << md5sum << std::endl;
+  std::cout << "Codec : " << Codec << std::endl;
+  std::cout << "RMS of Signal : " << signalRMS << std::endl;
+  std::cout << "SNR of Signal : " << signalSNR << std::endl;
+  std::cout << "Loudness Factor of Signal : " << signalLoudness << std::endl;
+  std::cout << "Size of Signal's FFT : " << sigFFTSize << std::endl;
+  std::cout << "Size of Signal's ACF : " << sigACFSize << std::endl;
+  std::cout << "Freq. Bands Present in Signal : ";
+  std::copy(v.begin(), v.end(), std::ostream_iterator<Real>(std::cout, " "));
+  std::cout << std::endl;
+  std::cout << "No. of Freq. Bands Present : " << numFreqBands << std::endl;
+}
+
+// Display the data from the data structure on the console.
+void AudioAttrs::printPool()
+{
+  std::cout << std::endl;
+  std::cout << "The following are data from internal data structure:" << 
+               std::endl;
+  std::cout << "Sample Size : " << audioAttrs.value<Real>("SampleSize") << 
+               std::endl;
+  std::cout << "Channels : " << audioAttrs.value<Real>("Channels") << 
+               std::endl;
+  std::cout << "Sample Rate : " << audioAttrs.value<Real>("SampleRate") << 
+               std::endl;
+  std::cout << "Bit Rate : " << audioAttrs.value<Real>("BitRate") << std::endl;
+  std::cout << "md5sum : " << audioAttrs.value<std::string>("md5sum") << 
+               std::endl;
+  std::cout << "Codec : " << audioAttrs.value<std::string>("Codec") << 
+               std::endl;
+  std::cout << "RMS of Signal : " << audioAttrs.value<Real>("RMS") << 
+               std::endl;
+  std::cout << "SNR of Signal : " << audioAttrs.value<Real>("SNR") << 
+               std::endl;
+  std::cout << "Loudness Factor of Signal : " << 
+               audioAttrs.value<Real>("Loudness") << std::endl;
 }
 
 AudioAttrs::~AudioAttrs()

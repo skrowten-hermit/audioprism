@@ -44,22 +44,38 @@ AudioBug::AudioBug(esstd::AlgorithmFactory& saf,
   std::string fileTag = attrs.value<std::string>("Description");
   Real SampleRate = attrs.value<Real>("SampleRate");
   
+  std::cout << std::endl;
+  std::cout << "Identifying Audio Signal Defects in " << fileTag << "...." << 
+               std::endl;
+  
   clickExists = DetectClickPop();
   gapsExists = DetectDiscontinuity();
   nbExists = DetectNoiseBurst();
 
   defectsData = SetDefectInfo();
+
+  if (consoleOut == true)
+  {
+    projectData();
+    printPool();
+  }
 }
 
 // Check for abnormal click/pop sounds.
 int AudioBug::DetectClickPop()
 {
-  int cStartsLen, cEndsLen;
   int frameSize = 2048;
   int hopSize = 1024;
   // int sampleSize = audioSignalVector.size();
   
   std::vector<Real> frame, CDframe;
+
+  if (consoleOut == true)
+  {
+    std::cout << std::endl;
+    std::cout << "Detecting clicks/pops in Audio signal " << fileTag << 
+                 "...." << std::endl;
+  }
   
   fc = AF.create("FrameCutter", "frameSize", frameSize, "hopSize", hopSize);
   cd = AF.create("ClickDetector", "frameSize", frameSize, "hopSize", hopSize,
@@ -85,21 +101,25 @@ int AudioBug::DetectClickPop()
     cd->compute();
    }
   
-  cStartsLen = clickStarts.size();
-  cEndsLen = clickEnds.size();
+  clickStartsLen = clickStarts.size();
+  clickEndsLen = clickEnds.size();
 
   delete fc;
   delete cd;
 
-  if (cStartsLen > 0 || cEndsLen > 0)
+  if (clickStartsLen > 0 || clickEndsLen > 0)
   {
-    if (cStartsLen > cEndsLen)
-      numClicks = cStartsLen;
-    else if (cStartsLen < cEndsLen)
-      numClicks = cEndsLen;
+    if (clickStartsLen > clickEndsLen)
+      numClicks = clickStartsLen;
+    else if (clickStartsLen < clickEndsLen)
+      numClicks = clickEndsLen;
     else
-      numClicks = cStartsLen;
+      numClicks = clickStartsLen;
   }
+
+  if (consoleOut == true)
+    std::cout << "Click/pop detection in " << fileTag << " done...." << 
+                 std::endl;
 
   // Return if click exists or not.
   if (numClicks > 0)
@@ -115,6 +135,13 @@ int AudioBug::DetectDiscontinuity()
   int frameSize = 2048;
   int hopSize = 1024;
   // int sampleSize = audioSignalVector.size();
+
+  if (consoleOut == true)
+  {
+    std::cout << std::endl;
+    std::cout << "Detecting discontinuities in Audio signal of " << fileTag 
+              << "...." << std::endl;
+  }
   
   std::vector<Real> frame;
   
@@ -157,6 +184,10 @@ int AudioBug::DetectDiscontinuity()
       numGaps = dStartsLen;
   }
 
+  if (consoleOut == true)
+    std::cout << "Discontinuity detection in " << fileTag << " done...." << 
+                 std::endl;
+
   // Return if discontinuity exists or not.
   if (numGaps > 0)
     return 1;
@@ -174,6 +205,13 @@ int AudioBug::DetectNoiseBurst()
   std::vector<Real> frame, noiseburstIdxs; 
   int frameNo = 1;
   int offset = 0;
+
+  if (consoleOut == true)
+  {
+    std::cout << std::endl;
+    std::cout << "Detecting noise bursts in Audio signal of " << fileTag 
+              << "...." << std::endl;
+  }
   
   fc = AF.create("FrameCutter", "frameSize", frameSize, "hopSize", hopSize);
   nb = AF.create("NoiseBurstDetector");
@@ -210,6 +248,10 @@ int AudioBug::DetectNoiseBurst()
 
   numNBSamples = noiseburstIdxs.size();
 
+  if (consoleOut == true)
+    std::cout << "Noise bursts detection in " << fileTag << " done...." << 
+                 std::endl;
+
   // Return if discontinuity exists or not, location(s) (in time) if exists.
   if (numNBSamples > 0)
     return 1;
@@ -224,12 +266,16 @@ Pool AudioBug::SetDefectInfo()
   // Return if silence exists or not, location(s) (in time) if exists.
   dPool.set("ClickExists", clickExists);
   dPool.set("ClickStarts", clickStarts);
-  dPool.set("ClickEnds", SampleRate);
+  dPool.set("ClickEnds", clickEnds);
+  dPool.set("NumClicks", numClicks);
   //dPool.set("ClickDurations", clickLengths);
   dPool.set("GapsExists", gapsExists);
   dPool.set("GapStarts", gapStarts); 
+  dPool.set("GapEnds", gapEnds); 
+  dPool.set("NumGaps", numGaps); 
   //dPool.set("GapDurations", gapLengths); 
   dPool.set("NoiseBurstsIdxs", nbIndexes);
+  dPool.set("NumNoiseBursts", numNBSamples);
   //dPool.set("NoiseBurstsDurations", nbLengths);
 
   return dPool;
@@ -242,12 +288,16 @@ Pool AudioBug::SetDefectInfo(std::string description, int split)
   // Return if silence exists or not, location(s) (in time) if exists.
   dPool.set(description + ".ClickExists", clickExists);
   dPool.set(description + ".ClickStarts", clickStarts);
-  dPool.set(description + ".ClickEnds", SampleRate);
+  dPool.set(description + ".ClickEnds", clickEnds);
+  dPool.set(description + ".NumClicks", numClicks);
   //dPool.set(description + ".ClickDurations", clickLengths);
   dPool.set(description + ".GapsExists", gapsExists);
   dPool.set(description + ".GapStarts", gapStarts); 
+  dPool.set(description + ".GapEnds", gapEnds); 
+  dPool.set(description + ".NumGaps", numGaps); 
   //dPool.set(description + ".GapDurations", gapLengths); 
   dPool.set(description + ".NoiseBurstsIdxs", nbIndexes);
+  dPool.set(description + ".NumNoiseBursts", numNBSamples);
   //dPool.set(description + ".NoiseBurstsDurations", nbLengths);
 
   if (split == 1)
@@ -327,6 +377,53 @@ void AudioBug::DetectMetallicAudio()
 {
   // Return if metallic audio exists or not, location(s) (in time) if exists.
   // Return the SNR.
+}
+
+// Print the members of the AudioLoad class to the console.
+void AudioBug::projectData()
+{
+  std::cout << std::endl;
+  std::cout << "The following are data from " << fileTag << ":" << std::endl;
+  std::cout << "Sample Rate : " << SampleRate << std::endl;
+  std::cout << "Clicks Present : " << clickExists << std::endl;
+  std::cout << "Clicks Starts Length : " << clickStartsLen << std::endl;
+  std::cout << "Clicks Ends Length : " << clickEndsLen << std::endl;
+  std::cout << "No. of Clicks : " << numClicks << std::endl;
+  std::cout << "Gaps Present : " << gapsExists << std::endl;
+  std::cout << "Gaps Starts Length : " << gapStartsLen << std::endl;
+  std::cout << "Gaps Ends Length : " << gapEndsLen << std::endl;
+  std::cout << "No. of Gaps : " << numGaps << std::endl;
+  std::cout << "Noise Bursts Present : " << nbExists << std::endl;
+  std::cout << "No. of Noise Bursts : " << numNBSamples << std::endl;
+}
+
+// Display the data from the data structure on the console.
+void AudioBug::printPool()
+{
+  std::cout << std::endl;
+  std::cout << "The following are data from internal data structure:" << 
+               std::endl;
+  std::cout << "Clicks Present : " << defectsData.value<Real>("ClickExists") 
+            << std::endl;
+  std::cout << "Clicks Starts : \n" << 
+               defectsData.value<std::vector<Real>>("ClickStarts") << std::endl;
+  std::cout << "Clicks Ends : \n" << 
+               defectsData.value<std::vector<Real>>("ClickEnds") << std::endl;
+  std::cout << "No. of Clicks : " << defectsData.value<Real>("NumClicks") << 
+               std::endl;
+  std::cout << "Gaps Present : " << defectsData.value<Real>("GapsExists") << 
+               std::endl;
+  std::cout << "Gaps Starts : \n" << 
+               defectsData.value<std::vector<Real>>("GapStarts") << std::endl;
+  std::cout << "Gaps Ends : \n" << 
+               defectsData.value<std::vector<Real>>("GapEnds") << std::endl;
+  std::cout << "No. of Gaps : " << defectsData.value<Real>("NumGaps") << 
+               std::endl;
+  std::cout << "Noise Bursts : \n" << 
+               defectsData.value<std::vector<Real>>("NoiseBurstsIdxs") << 
+               std::endl;
+  std::cout << "No. of Noise Bursts : " << 
+               defectsData.value<Real>("NumNoiseBursts") << std::endl;
 }
 
 AudioBug::~AudioBug()
