@@ -42,70 +42,45 @@ inputOpts::inputOpts(std::string spath, std::string tpath, bool split,
   
   if (numfiles >= 1)
   {
+    mainout = true;
     if (files[0] != "")
-    {
-      mainout = true;
       moutfile = files[0];
-    }
     else
-    {
-      mainout = false;
       moutfile = DEFAULT_OUTPUT;
-    }
 
     if (split == true)
     {
       if (numfiles >= 2)
       {
+        loaderout = true;
         if (files[1] != "")
-        {
-          loaderout = true;
 	        loutfile = files[1];
-        }
         else
-        {
-          loaderout = false;
           loutfile = DEFAULT_LOUTPUT;
-        }
 
         if (numfiles >= 3)
         {
+          attrout = true;
           if (files[2] != "")
-          {
-            attrout = true;
 	          aoutfile = files[2];
-	        }
           else
-          {
-            attrout = false;
 	          aoutfile = DEFAULT_AOUTPUT;
-          }
 
           if (numfiles >= 4)
           {
+            verifyout = true;
             if (files[3] != "")
-            {
-              verifyout = true;
               voutfile = files[3];
-            }
             else
-            {
-              verifyout = false;
               voutfile = DEFAULT_VOUTPUT;
-            }
 
             if (numfiles == 5)
             {
+              defectout = true;
               if (files[4] != "")
-              {  
-                defectout = true;
                 doutfile = files[4];
-              }
               else
-              {
-                defectout = false;
                 doutfile = DEFAULT_DOUTPUT;
-              }
             }
           }
         }
@@ -126,7 +101,17 @@ inputOpts::inputOpts(std::string spath, std::string tpath, bool split,
   }
   else
   {
+    mainout = false;
+    loaderout = false;
+    attrout = false;
+    verifyout = false;
+    defectout = false;
+
     moutfile = "";
+    loutfile = "";
+    aoutfile = "";
+    voutfile = "";
+    doutfile = "";
   }
 }
 

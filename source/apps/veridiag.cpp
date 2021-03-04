@@ -59,6 +59,9 @@ int main(int argc, char** argv)
   // The following stores each user input in and as a struct data structure.
   inProps inConfig = inOpts.storeInConfig();
 
+  if (inConfig.icf.cout == true)
+    inOpts.dispInputOpts();
+
   essentia::init();
 
   esstd::AlgorithmFactory& stdAF = esstd::AlgorithmFactory::instance();

@@ -2,7 +2,7 @@
 #include <cmath>
 #include <complex>
 #include <algorithm>
-#include "credits/libav.h"
+#include "../credits/libav.h"
 #include <essentia/algorithmfactory.h>
 #include <essentia/streaming/algorithms/poolstorage.h>
 #include "standard/monomixer.h"
@@ -10,8 +10,8 @@
 #include "stats/variance.h"
 #include <essentia/scheduler/network.h>
 
-#define DEFAULT_INPUT "../../lib/essentia/test/audio/recorded/cat_purrrr.wav"
-#define DEFAULT_OUTPUT "results.yaml"
+#define DEFAULT_INPUT "../lib/essentia/test/audio/recorded/cat_purrrr.wav"
+#define DEFAULT_OUTPUT "../temp/ofiles/attresults.yaml"
 
 using namespace std;
 using namespace essentia;

@@ -72,9 +72,9 @@ inputOpts getOptions(int argcount, char** argvals, std::string appl)
         ("p,splitoutput", "Split the output to separate files", 
                           cxxopts::value<bool>()->default_value("false"))
         ("o,outfile", "Output file(s), separated by \',\' if multiple output "
-                      "files (only if -p or --splitoutput is set) needed.\nThe "
+                      "files (only if -p or --splitoutput is set) needed. The "
                       "order is - main, loader, attributes, verify, defects.", 
-                      cxxopts::value<std::vector<std::string>>())
+                      cxxopts::value<std::vector<std::string>>()->implicit_value(""))
         ("v,verbose", "Verbose output", 
                       cxxopts::value<bool>()->default_value("false"))
         ("h,help", "Print usage")
@@ -89,9 +89,9 @@ inputOpts getOptions(int argcount, char** argvals, std::string appl)
         ("p,splitoutput", "Split the output to separate files", 
                           cxxopts::value<bool>()->default_value("false"))
         ("o,outfile", "Output file(s), separated by \',\' if multiple output "
-                      "files (only if -p or --splitoutput is set) needed.\nThe "
+                      "files (only if -p or --splitoutput is set) needed. The "
                       "order is - main, loader, attributes, verify, defects.", 
-                      cxxopts::value<std::string>())
+                      cxxopts::value<std::vector<std::string>>()->implicit_value(""))
         ("v,verbose", "Verbose output", 
                       cxxopts::value<bool>()->default_value("false"))
         ("h,help", "Print usage")
@@ -128,7 +128,7 @@ inputOpts getOptions(int argcount, char** argvals, std::string appl)
   else
     spval = false;
   
-  std::vector<std::string> o_files {"N/A"};
+  std::vector<std::string> o_files;
   if (result.count("outfile"))
     o_files = result["outfile"].as<std::vector<std::string>>();
   //else
