@@ -71,14 +71,7 @@ class AudioBug
 
     Real SampleRate;
 
-  public:
     std::string fileTag;
-    Pool defectsData;
-    
-    // Initialization and de-initialization of the defects class.
-    AudioBug(esstd::AlgorithmFactory& saf, std::vector<Real> audioSigVector, 
-             Pool audioAttrs, int saveData, bool conOut);
-    ~AudioBug();
 
     // Functions for processing data of the defects class.
     int DetectClickPop();
@@ -95,9 +88,21 @@ class AudioBug
     void DetectEcho();
     void DetectMetallicAudio();
     
-    /* Functions for storing the attributes data in a pool data structure or a
-       file. */
+    // Functions for storing the attributes data in a pool data structure.
     Pool SetDefectInfo();  // For internal storage.
+    Pool defectsData;
+    
+  public:
+    // Initialization and de-initialization of the defects class.
+    AudioBug(esstd::AlgorithmFactory& saf, std::vector<Real> audioSigVector, 
+             Pool attrsData, std::string description, int saveData, 
+             bool conOut);
+    ~AudioBug();
+
+    // Get a non-modifiable data for processing.
+    const Pool &GetBugsData() const { return defectsData; }
+
+    // Get a non-modifiable data for processing.
     void WriteToFile(); // For external storage.
 
     // Function to display calculated parameters on console.

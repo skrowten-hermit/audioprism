@@ -48,7 +48,8 @@ AudioLoad::AudioLoad(esstd::AlgorithmFactory& saf, std::string inFile,
   AudioBuffer = GetAudioData();
   MonoBuffer = GetMonoData();
 
-  loadPool = StoreAudio();
+  audioData.set(fileTag + ".MonoAudio", MonoBuffer);
+  audioInfo = StoreAudio();
 
   if (consoleOut == true)
   {
@@ -103,7 +104,6 @@ std::vector<StereoSample> AudioLoad::GetAudioData()
 // chosen (using MonoMixer).
 std::vector<Real> AudioLoad::GetMonoData()
 {
-  std::vector<Real> MonoStream;
   int chnls;
 
   if (consoleOut == true)
@@ -117,11 +117,11 @@ std::vector<Real> AudioLoad::GetMonoData()
 
   MonoData->input("audio").set(AudioBuffer);
   MonoData->input("numberChannels").set(chnls);
-  MonoData->output("audio").set(MonoStream);
+  MonoData->output("audio").set(MonoBuffer);
 
   MonoData->compute();
 
-  MBSize = MonoStream.size();
+  MBSize = MonoBuffer.size();
 
   delete MonoData;
 
@@ -129,7 +129,7 @@ std::vector<Real> AudioLoad::GetMonoData()
     std::cout << "Audio data extracted from " << fileTag << " done...." << 
                  std::endl;
 
-  return MonoStream;
+  return MonoBuffer;
 }
 
 /* // Get the left channel of a stereo audio signal from a given audio file.
@@ -167,17 +167,12 @@ Pool AudioLoad::StoreAudio()
   }
 
   // Pool function add()/set() don't support a vector of SteroSample type.
-  // audioData.set("Audio", AudioBuffer);
-  audioData.set("MonoAudio", MonoBuffer);
-
-  audioInfo.set("Channels", Channels);
-  audioInfo.set("md5sum", md5sum);
-  audioInfo.set("SampleRate", SampleRate);
-  audioInfo.set("BitRate", BitRate);
-  audioInfo.set("Codec", Codec);
-
-  aPool.merge(audioInfo);
-  aPool.merge(audioData);
+  // audioData.set(fileTag + ".Audio", AudioBuffer);
+  aPool.set(fileTag + ".Channels", Channels);
+  aPool.set(fileTag + ".md5sum", md5sum);
+  aPool.set(fileTag + ".SampleRate", SampleRate);
+  aPool.set(fileTag + ".BitRate", BitRate);
+  aPool.set(fileTag + ".Codec", Codec);
 
   if (consoleOut == true)
     std::cout << "Audio data from " << fileTag << " stored internally...." << 
@@ -196,26 +191,12 @@ void AudioLoad::WriteToFile()
     std::cout << std::endl;
     std::cout << "Storing Audio data from " << audioFile << " externally...." 
               << std::endl;
-  }
-
-  // Pool function add()/set() don't support a vector of SteroSample type.
-  // audioData.set(fileTag + ".Audio", AudioBuffer); 
-  audioData.set(fileTag + ".MonoAudio", MonoBuffer);
-
-  audioInfo.set(fileTag + ".Channels", Channels);
-  audioInfo.set(fileTag + ".md5sum", md5sum);
-  audioInfo.set(fileTag + ".SampleRate", SampleRate);
-  audioInfo.set(fileTag + ".BitRate", BitRate);
-  audioInfo.set(fileTag + ".Codec", Codec);
-
-  aPool.merge(audioInfo);
-  aPool.merge(audioData);
-
-  if (consoleOut == true)
-  {
     std::cout << "-------- writing results to file " << outputFile 
               << " --------" << std::endl;
   }
+
+  aPool.merge(audioInfo);
+  aPool.merge(audioData);
     
   Output = AF.create("YamlOutput", "filename", outputFile);
   Output->input("pool").set(aPool);
@@ -245,12 +226,18 @@ void AudioLoad::projectData()
 void AudioLoad::printPool()
 {
   std::cout << std::endl;
-  std::cout << "The following are data from internal data structure:" << std::endl;
-  std::cout << "Channels : " << loadPool.value<Real>("Channels") << std::endl;
-  std::cout << "Sample Rate : " << loadPool.value<Real>("SampleRate") << std::endl;
-  std::cout << "Bit Rate : " << loadPool.value<Real>("BitRate") << std::endl;
-  std::cout << "md5sum : " << loadPool.value<std::string>("md5sum") << std::endl;
-  std::cout << "Codec : " << loadPool.value<std::string>("Codec") << std::endl;
+  std::cout << "The following are data from internal data structure:" << 
+               std::endl;
+  std::cout << "Channels : " << audioInfo.value<Real>(fileTag + ".Channels") << 
+               std::endl;
+  std::cout << "Sample Rate : " << audioInfo.value<Real>(fileTag + ".SampleRate") 
+            << std::endl;
+  std::cout << "Bit Rate : " << audioInfo.value<Real>(fileTag + ".BitRate") << 
+               std::endl;
+  std::cout << "md5sum : " << audioInfo.value<std::string>(fileTag + ".md5sum") 
+            << std::endl;
+  std::cout << "Codec : " << audioInfo.value<std::string>(fileTag + ".Codec") << 
+               std::endl;
 }
 
 // AudioLoad Destructor for closure.

@@ -48,11 +48,11 @@ AudioAttrs::AudioAttrs(esstd::AlgorithmFactory& saf,
                "...." << std::endl;
   
   SampleSize = signalVector.size();
-  SampleRate = attrPool.value<Real>("SampleRate");
-  Channels = attrPool.value<Real>("Channels");
-  BitRate = attrPool.value<Real>("BitRate");
-  md5sum = attrPool.value<std::string>("md5sum");
-  Codec = attrPool.value<std::string>("Codec");
+  SampleRate = attrPool.value<Real>(fileTag + ".SampleRate");
+  Channels = attrPool.value<Real>(fileTag + ".Channels");
+  BitRate = attrPool.value<Real>(fileTag + ".BitRate");
+  md5sum = attrPool.value<std::string>(fileTag + ".md5sum");
+  Codec = attrPool.value<std::string>(fileTag + ".Codec");
 
   signalAutoCorr = CalcACFSeq();
   signalFreqBandEnergy = GetFreqComponents();
@@ -61,7 +61,7 @@ AudioAttrs::AudioAttrs(esstd::AlgorithmFactory& saf,
   signalSNR = CalcSNR();
   signalLoudness = CalcLoudness();
 
-  audioAttrs = StoreAttrs();
+  attrsData = StoreAttrs();
 
   if (consoleOut == true)
   {
@@ -324,16 +324,16 @@ Pool AudioAttrs::StoreAttrs()
 {
   Pool attrsPool;
   
-  attrsPool.set("Description", fileTag);
-  attrsPool.set("SampleSize", SampleSize);
-  attrsPool.set("BitRate", BitRate);
-  attrsPool.set("SampleRate", SampleRate);
-  attrsPool.set("Channels", Channels);
-  attrsPool.set("md5sum", md5sum);
-  attrsPool.set("Codec", Codec);
-  attrsPool.set("RMS", signalRMS);
-  attrsPool.set("SNR", signalSNR);
-  attrsPool.set("Loudness", signalLoudness);
+  attrsPool.set(fileTag + ".Description", fileTag);
+  attrsPool.set(fileTag + ".SampleSize", SampleSize);
+  attrsPool.set(fileTag + ".BitRate", BitRate);
+  attrsPool.set(fileTag + ".SampleRate", SampleRate);
+  attrsPool.set(fileTag + ".Channels", Channels);
+  attrsPool.set(fileTag + ".md5sum", md5sum);
+  attrsPool.set(fileTag + ".Codec", Codec);
+  attrsPool.set(fileTag + ".RMS", signalRMS);
+  attrsPool.set(fileTag + ".SNR", signalSNR);
+  attrsPool.set(fileTag + ".Loudness", signalLoudness);
 
   return attrsPool;
 }
@@ -341,34 +341,17 @@ Pool AudioAttrs::StoreAttrs()
 // Store (for file printing) all the attributes in a Pool data structure.
 void AudioAttrs::WriteToFile()
 {
-  Pool attrsPool;
-
   if (consoleOut == true)
   {
     std::cout << std::endl;
-    std::cout << "Storing Audio data from " << fileTag << " externally...." 
+    std::cout << "Storing Audio attributes from " << fileTag << " externally...." 
               << std::endl;
-  }
-  
-  attrsPool.set(description + ".Description", fileTag);
-  attrsPool.set(description + ".SampleSize", SampleSize);
-  attrsPool.set(description + ".BitRate", BitRate);
-  attrsPool.set(description + ".SampleRate", SampleRate);
-  attrsPool.set(description + ".Channels", Channels);
-  attrsPool.set(description + ".md5sum", md5sum);
-  attrsPool.set(description + ".Codec", Codec);
-  attrsPool.set(description + ".RMS", signalRMS);
-  attrsPool.set(description + ".SNR", signalSNR);
-  attrsPool.set(description + ".Loudness", signalLoudness);
-
-  if (consoleOut == true)
-  {
     std::cout << "-------- writing results to file " << outputFile 
               << " --------" << std::endl;
   }
 
   Output = AF.create("YamlOutput", "filename", outputFile);
-  Output->input("pool").set(attrsPool);
+  Output->input("pool").set(attrsData);
   Output->compute();
   delete Output;
 
@@ -406,23 +389,24 @@ void AudioAttrs::printPool()
   std::cout << std::endl;
   std::cout << "The following are data from internal data structure:" << 
                std::endl;
-  std::cout << "Sample Size : " << audioAttrs.value<Real>("SampleSize") << 
+  std::cout << "Sample Size : " << 
+               attrsData.value<Real>(fileTag + ".SampleSize") << std::endl;
+  std::cout << "Channels : " << attrsData.value<Real>(fileTag + ".Channels") << 
                std::endl;
-  std::cout << "Channels : " << audioAttrs.value<Real>("Channels") << 
+  std::cout << "Sample Rate : " << 
+               attrsData.value<Real>(fileTag + ".SampleRate") << std::endl;
+  std::cout << "Bit Rate : " << attrsData.value<Real>(fileTag + ".BitRate") << 
                std::endl;
-  std::cout << "Sample Rate : " << audioAttrs.value<Real>("SampleRate") << 
+  std::cout << "md5sum : " << 
+               attrsData.value<std::string>(fileTag + ".md5sum") << std::endl;
+  std::cout << "Codec : " << 
+               attrsData.value<std::string>(fileTag + ".Codec") << std::endl;
+  std::cout << "RMS of Signal : " << attrsData.value<Real>(fileTag + ".RMS") << 
                std::endl;
-  std::cout << "Bit Rate : " << audioAttrs.value<Real>("BitRate") << std::endl;
-  std::cout << "md5sum : " << audioAttrs.value<std::string>("md5sum") << 
-               std::endl;
-  std::cout << "Codec : " << audioAttrs.value<std::string>("Codec") << 
-               std::endl;
-  std::cout << "RMS of Signal : " << audioAttrs.value<Real>("RMS") << 
-               std::endl;
-  std::cout << "SNR of Signal : " << audioAttrs.value<Real>("SNR") << 
+  std::cout << "SNR of Signal : " << attrsData.value<Real>(fileTag + ".SNR") << 
                std::endl;
   std::cout << "Loudness Factor of Signal : " << 
-               audioAttrs.value<Real>("Loudness") << std::endl;
+               attrsData.value<Real>(fileTag + ".Loudness") << std::endl;
 }
 
 AudioAttrs::~AudioAttrs()

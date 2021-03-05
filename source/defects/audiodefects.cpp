@@ -36,13 +36,13 @@
 // AudioBug Constructor for initialization.
 AudioBug::AudioBug(esstd::AlgorithmFactory& saf, 
                    std::vector<Real> audioSigVector, Pool attrs, 
-                   int saveData, bool conOut) : saveOutput(saveData), 
-                  consoleOut(conOut), AF(saf), audioSignalVector(audioSigVector)
+                   std::string description, int saveData, bool conOut) : 
+                  saveOutput(saveData), consoleOut(conOut), AF(saf), 
+                  audioSignalVector(audioSigVector), fileTag(description)
 {
   //essentia::init();
 
-  fileTag = attrs.value<std::string>("Description");
-  SampleRate = attrs.value<Real>("SampleRate");
+  SampleRate = attrs.value<Real>(fileTag + ".SampleRate");
   
   std::cout << std::endl;
   std::cout << "Identifying Audio Signal Defects in " << fileTag << "...." << 
@@ -264,19 +264,19 @@ Pool AudioBug::SetDefectInfo()
 {
   Pool dPool;
   // Return if silence exists or not, location(s) (in time) if exists.
-  dPool.set("ClickExists", clickExists);
-  dPool.set("ClickStarts", clickStarts);
-  dPool.set("ClickEnds", clickEnds);
-  dPool.set("NumClicks", numClicks);
-  //dPool.set("ClickDurations", clickLengths);
-  dPool.set("GapsExists", gapsExists);
-  dPool.set("GapStarts", gapStarts); 
-  dPool.set("GapEnds", gapEnds); 
-  dPool.set("NumGaps", numGaps); 
-  //dPool.set("GapDurations", gapLengths); 
-  dPool.set("NoiseBurstsIdxs", nbIndexes);
-  dPool.set("NumNoiseBursts", numNBSamples);
-  //dPool.set("NoiseBurstsDurations", nbLengths);
+  dPool.set(fileTag + ".ClickExists", clickExists);
+  dPool.set(fileTag + ".ClickStarts", clickStarts);
+  dPool.set(fileTag + ".ClickEnds", clickEnds);
+  dPool.set(fileTag + ".NumClicks", numClicks);
+  //dPool.set(fileTag + ".ClickDurations", clickLengths);
+  dPool.set(fileTag + ".GapsExists", gapsExists);
+  dPool.set(fileTag + ".GapStarts", gapStarts); 
+  dPool.set(fileTag + ".GapEnds", gapEnds); 
+  dPool.set(fileTag + ".NumGaps", numGaps); 
+  //dPool.set(fileTag + ".GapDurations", gapLengths); 
+  dPool.set(fileTag + ".NoiseBurstsIdxs", nbIndexes);
+  dPool.set(fileTag + ".NumNoiseBursts", numNBSamples);
+  //dPool.set(fileTag + ".NoiseBurstsDurations", nbLengths);
 
   return dPool;
 }
@@ -284,37 +284,17 @@ Pool AudioBug::SetDefectInfo()
 // Store (for file printing) all the attributes in a Pool data structure.
 void AudioBug::WriteToFile()
 {
-  Pool dPool;
-
   if (consoleOut == true)
   {
     std::cout << std::endl;
-    std::cout << "Storing Audio data from " << fileTag << " externally...." 
+    std::cout << "Storing Audio defects from " << fileTag << " externally...." 
               << std::endl;
-  }
-
-  dPool.set(description + ".ClickExists", clickExists);
-  dPool.set(description + ".ClickStarts", clickStarts);
-  dPool.set(description + ".ClickEnds", clickEnds);
-  dPool.set(description + ".NumClicks", numClicks);
-  //dPool.set(description + ".ClickDurations", clickLengths);
-  dPool.set(description + ".GapsExists", gapsExists);
-  dPool.set(description + ".GapStarts", gapStarts); 
-  dPool.set(description + ".GapEnds", gapEnds); 
-  dPool.set(description + ".NumGaps", numGaps); 
-  //dPool.set(description + ".GapDurations", gapLengths); 
-  dPool.set(description + ".NoiseBurstsIdxs", nbIndexes);
-  dPool.set(description + ".NumNoiseBursts", numNBSamples);
-  //dPool.set(description + ".NoiseBurstsDurations", nbLengths);
-
-  if (consoleOut == true)
-  {
     std::cout << "-------- writing results to file " << outputFile 
               << " --------" << std::endl;
   }
     
   Output = AF.create("YamlOutput", "filename", outputFile);
-  Output->input("pool").set(dPool);
+  Output->input("pool").set(defectsData);
   Output->compute();
   delete Output;
 
@@ -409,27 +389,28 @@ void AudioBug::printPool()
   std::cout << std::endl;
   std::cout << "The following are data from internal data structure:" << 
                std::endl;
-  std::cout << "Clicks Present : " << defectsData.value<Real>("ClickExists") 
+  std::cout << "Clicks Present : " << defectsData.value<Real>(fileTag + ".ClickExists") 
             << std::endl;
   std::cout << "Clicks Starts : \n" << 
-               defectsData.value<std::vector<Real>>("ClickStarts") << std::endl;
+               defectsData.value<std::vector<Real>>(fileTag + ".ClickStarts") << std::endl;
   std::cout << "Clicks Ends : \n" << 
-               defectsData.value<std::vector<Real>>("ClickEnds") << std::endl;
-  std::cout << "No. of Clicks : " << defectsData.value<Real>("NumClicks") << 
-               std::endl;
-  std::cout << "Gaps Present : " << defectsData.value<Real>("GapsExists") << 
-               std::endl;
+               defectsData.value<std::vector<Real>>(fileTag + ".ClickEnds") << std::endl;
+  std::cout << "No. of Clicks : " << 
+               defectsData.value<Real>(fileTag + ".NumClicks") << std::endl;
+  std::cout << "Gaps Present : " << 
+               defectsData.value<Real>(fileTag + ".GapsExists") << std::endl;
   std::cout << "Gaps Starts : \n" << 
-               defectsData.value<std::vector<Real>>("GapStarts") << std::endl;
+               defectsData.value<std::vector<Real>>(fileTag + ".GapStarts") << 
+               std::endl;
   std::cout << "Gaps Ends : \n" << 
-               defectsData.value<std::vector<Real>>("GapEnds") << std::endl;
-  std::cout << "No. of Gaps : " << defectsData.value<Real>("NumGaps") << 
-               std::endl;
+               defectsData.value<std::vector<Real>>(fileTag + ".GapEnds") << std::endl;
+  std::cout << "No. of Gaps : " << defectsData.value<Real>(fileTag + ".NumGaps") 
+            << std::endl;
   std::cout << "Noise Bursts : \n" << 
-               defectsData.value<std::vector<Real>>("NoiseBurstsIdxs") << 
-               std::endl;
+               defectsData.value<std::vector<Real>>(fileTag + ".NoiseBurstsIdxs") 
+            << std::endl;
   std::cout << "No. of Noise Bursts : " << 
-               defectsData.value<Real>("NumNoiseBursts") << std::endl;
+               defectsData.value<Real>(fileTag + ".NumNoiseBursts") << std::endl;
 }
 
 AudioBug::~AudioBug()

@@ -74,44 +74,48 @@ int main(int argc, char** argv)
                       inConfig.icf.lout, inConfig.icf.cout);
   AudioLoad snkLoader(stdAF, inConfig.icd.snk, inConfig.icd.lofile, snkDescr,
                       inConfig.icf.lout, inConfig.icf.cout);
-  std::vector<Real> sourceBuffer = srcLoader.MonoBuffer;
-  std::vector<Real> sinkBuffer = snkLoader.MonoBuffer;
-  Pool srcLPool = srcLoader.loadPool;
-  Pool snkLPool = snkLoader.loadPool;
+  std::vector<Real> sourceBuffer = srcLoader.GetBuffer();
+  std::vector<Real> sinkBuffer = snkLoader.GetBuffer();
+  Pool srcLPool = srcLoader.GetLoaderData();
+  Pool snkLPool = snkLoader.GetLoaderData();
+  if (inConfig.icf.lout == true)
+  {
+    srcLoader.WriteToFile();
+    snkLoader.WriteToFile();
+  }
 
   // Extract audio attributes from the buffers.
   AudioAttrs srcAttrs(stdAF, sourceBuffer, srcLPool, srcDescr, 
                       inConfig.icf.aout, inConfig.icf.cout);
   AudioAttrs snkAttrs(stdAF, sinkBuffer, snkLPool, snkDescr, inConfig.icf.aout, 
                       inConfig.icf.cout);
-  Pool sourceAttrs = srcAttrs.audioAttrs;
-  std::string srcdescr = srcAttrs.audioAttrs.value<std::string>("Description");
-  Real srcsamplerate = srcAttrs.audioAttrs.value<Real>("SampleRate");
-  sourceAttrs.set("Description", srcdescr);
-  sourceAttrs.set("SampleRate", srcsamplerate);
-  Pool sinkAttrs = snkAttrs.audioAttrs;
-  std::string snkdescr = snkAttrs.audioAttrs.value<std::string>("Description");
-  Real snksamplerate = snkAttrs.audioAttrs.value<Real>("SampleRate");
-  sinkAttrs.set("Description", snkdescr);
-  sinkAttrs.set("SampleRate", snksamplerate);
+  Pool sourceAttrs = srcAttrs.GetAttrData();
+  Pool sinkAttrs = snkAttrs.GetAttrData();
+  if (inConfig.icf.aout == true)
+  {
+    srcAttrs.WriteToFile();
+    snkAttrs.WriteToFile();
+  }
 
   // Verify the audio by comparing to the source buffer.
-  AudioVerify validate(stdAF, sourceBuffer, sinkBuffer, sourceAttrs, sinkAttrs, 
+  AudioVerify validate(stdAF, sourceBuffer, sinkBuffer, 
+                       sourceAttrs, sinkAttrs, srcDescr, snkDescr, 
                        inConfig.icd.vofile, inConfig.icf.vout, 
                        inConfig.icf.cout);
+  Pool validateAudio = validate.GetValidationData();
+  if (inConfig.icf.vout == true)
+    validate.WriteToFile();
 
-  Pool srcAttrsOut = srcAttrs.StoreAttrs(srcdescr, inConfig.icf.aout);
-  Pool snkAttrsOut = snkAttrs.StoreAttrs(snkdescr, inConfig.icf.aout);
-  Pool verifierOut = validate.SetVerifyData(srcdescr, snkdescr, inConfig.icf.vout);
-
+  // Collect all the computed parameters in a data structure.
   Pool gatherData;
+  gatherData.merge(sourceAttrs);
+  gatherData.merge(sinkAttrs);
+  gatherData.merge(validateAudio);
 
-  gatherData.merge(srcAttrsOut);
-  gatherData.merge(snkAttrsOut);
-  gatherData.merge(verifierOut);
-
+  // Generate and display the final result.
   generateResults(gatherData);
 
+  // Teardown the essentia library interface.
   essentia::shutdown();
 
   return 0;

@@ -55,6 +55,7 @@ class AudioLoad
     esstd::Algorithm* MonoData;
     esstd::Algorithm* Output;
 
+    std::vector<Real> MonoBuffer;
     std::vector<Real> LeftBuffer, RightBuffer;
     std::vector<StereoSample> AudioBuffer, StereoBuffer;
 
@@ -69,20 +70,9 @@ class AudioLoad
     std::string md5sum;
     std::string Codec;
 
-    Pool audioData;
-    Pool audioInfo;
-  
-  public:
-    std::vector<Real> MonoBuffer;
+    Pool audioData, audioInfo;
     
     std::string fileTag;
-    Pool loadPool;
-    
-    // Initialization and de-initialization of the loader class.
-    AudioLoad(esstd::AlgorithmFactory& saf, std::string inFile, 
-              std::string outFile, std::string description, int saveData,
-              bool conOut);
-    ~AudioLoad();
 
     // Functions for processing data of the loader class.
     std::vector<StereoSample> GetAudioData();
@@ -90,9 +80,21 @@ class AudioLoad
     std::vector<Real> GetLeftChannel();
     std::vector<Real> GetRightChannel();
     
-    /* Functions for storing the attributes data in a pool data structure or a
-       file. */
+    // Functions for storing the attributes data in a pool data structure.
     Pool StoreAudio();  // For internal storage.
+  
+  public:
+    // Initialization and de-initialization of the loader class.
+    AudioLoad(esstd::AlgorithmFactory& saf, std::string inFile, 
+              std::string outFile, std::string description, int saveData,
+              bool conOut);
+    ~AudioLoad();
+
+    // Get a non-modifiable buffer & data for processing.
+    const std::vector<Real> &GetBuffer() const { return MonoBuffer; }
+    const Pool &GetLoaderData() const { return audioInfo; }
+    
+    // Function for storing the attributes data in a file.
     void WriteToFile(); // For external storage.
 
     // Function to display calculated parameters on console.

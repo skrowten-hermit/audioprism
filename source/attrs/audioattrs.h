@@ -79,16 +79,8 @@ class AudioAttrs
     std::string Codec;
     
     Real signalF0, signalRMS, signalSNR, signalLoudness;
-    
-  public:
+
     std::string fileTag;
-    Pool audioAttrs;
-    
-    // Initialization and de-initialization of the attribute class.
-    AudioAttrs(esstd::AlgorithmFactory& saf, 
-               std::vector<Real> audioSigVector, Pool attrPool, 
-               std::string description, int saveData, bool conOut);
-    ~AudioAttrs();
 
     // Functions for processing data of the attribute class.
     std::vector<Real> CalcACFSeq(); // Get the auto-correlation function
@@ -103,9 +95,21 @@ class AudioAttrs
     Real CalcSNR(); // Get the signal-to-Noise Ratio of the audio signal.
     Real CalcLoudness(); // Get the loudness of the audio signal.
     
-    /* Functions for storing the attributes data in a pool data structure or a
-       file. */
+    // Functions for storing the attributes data in a pool data structure.
     Pool StoreAttrs();  // For internal storage.
+    Pool attrsData;
+    
+  public:
+    // Initialization and de-initialization of the attribute class.
+    AudioAttrs(esstd::AlgorithmFactory& saf, 
+               std::vector<Real> audioSigVector, Pool attrPool, 
+               std::string description, int saveData, bool conOut);
+    ~AudioAttrs();
+
+    // Get a non-modifiable data for processing.
+    const Pool &GetAttrData() const { return attrsData; }
+
+    // Function to display calculated parameters on console.
     void WriteToFile(); // For external storage.
 
     // Function to display calculated parameters on console.

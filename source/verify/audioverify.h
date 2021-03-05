@@ -59,7 +59,6 @@ class AudioVerify
     std::vector<Real> sinkSignal;
     std::vector<Real> corrVector;
 
-    
     std::vector<Real> audioCrossCorrSeq;
     
     long unsigned int sourceSize = 0, sinkSize = 0;
@@ -80,16 +79,9 @@ class AudioVerify
     Real audioSimilarityIndex;
     Real audioDelay;
 
-  public:
-    std::string srcDescr, snkDescr;
     Pool verifyData;
-    
-    // Initialization and de-initialization of the verifier class.
-    AudioVerify(esstd::AlgorithmFactory& saf, 
-                std::vector<Real> source, std::vector<Real> sink, 
-                Pool srcAttrs, Pool snkAttrs, 
-                std::string description, int saveData, bool conOut);
-    ~AudioVerify();
+
+    std::string srcDescr, snkDescr;
 
     // Functions for processing data of the verifier class.
     std::vector<Real> CalcCCFSeq();
@@ -98,9 +90,23 @@ class AudioVerify
     int AudioExists();
     Real CalcDelay();
     
-    /* Functions for storing the attributes data in a pool data structure or a
-       file. */
+    // Functions for storing the attributes data in a pool data structure.
     Pool SetVerifyData();  // For internal storage.
+    Pool verifyInfo;
+    
+  public:
+    // Initialization and de-initialization of the verifier class.
+    AudioVerify(esstd::AlgorithmFactory& saf, 
+                std::vector<Real> source, std::vector<Real> sink, 
+                Pool srcAttrs, Pool snkAttrs, 
+                std::string srcdesc, std::string snkdesc, 
+                std::string description, int saveData, bool conOut);
+    ~AudioVerify();
+
+    // Get a non-modifiable data for processing.
+    const Pool &GetValidationData() const { return verifyInfo; }
+    
+    // Function for storing the attributes data in a file.
     void WriteToFile(); // For external storage.
 
     // Function to display calculated parameters on console.

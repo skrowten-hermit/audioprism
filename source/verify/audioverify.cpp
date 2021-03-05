@@ -38,16 +38,14 @@
 AudioVerify::AudioVerify(esstd::AlgorithmFactory& saf, 
                          std::vector<Real> source, 
                          std::vector<Real> sink, 
-                         Pool srcAttrs, Pool snkAttrs, 
-                         std::string outFile, int saveData, bool conOut) : 
+                         Pool srcAttrs, Pool snkAttrs, std::string srcdesc, 
+                         std::string snkdesc, std::string outFile, 
+                         int saveData, bool conOut) : 
                         outputFile(outFile), saveOutput(saveData), 
                         consoleOut(conOut), AF(saf), sourceSignal(source), 
-                        sinkSignal(sink)
+                        sinkSignal(sink), srcDescr(srcdesc), snkDescr(snkdesc)
 {
   //essentia::init();
-
-  srcDescr = srcAttrs.value<std::string>("Description");
-  snkDescr = snkAttrs.value<std::string>("Description");
   
   std::cout << std::endl << "Acquired signal vectors length :" << std::endl;
   std::cout << "Source signal samples : " << sourceSignal.size() << std::endl;
@@ -57,8 +55,8 @@ AudioVerify::AudioVerify(esstd::AlgorithmFactory& saf,
   std::cout << "Comparing Audio files " << srcDescr << " (source) and " << 
                snkDescr << " (target)...." << std::endl;
 
-  sourceRMS = srcAttrs.value<Real>("RMS");
-  sinkRMS = snkAttrs.value<Real>("RMS");
+  sourceRMS = srcAttrs.value<Real>(srcDescr + ".RMS");
+  sinkRMS = snkAttrs.value<Real>(snkDescr + ".RMS");
 
   tie(sourceSignal, sinkSignal) = comp2padd(source, sink);
 
@@ -76,7 +74,7 @@ AudioVerify::AudioVerify(esstd::AlgorithmFactory& saf,
   RMSMatch = CalcRMSMatch();
   audioExists = AudioExists();
 
-  verifyData = SetVerifyData();
+  verifyInfo = SetVerifyData();
 
   if (consoleOut == true)
   {
@@ -129,6 +127,12 @@ std::vector<Real> AudioVerify::CalcCCFSeq()
 
   // Above lambda function can only capture local scoped variables.
   xcorrNormFactor = normFactor; 
+
+  verifyData.set(srcDescr + "--x--" + snkDescr + ".CorrVector", corrVector);
+  verifyData.set(srcDescr + "--x--" + snkDescr + ".SourceVariance", sourceVar);
+  verifyData.set(srcDescr + "--x--" + snkDescr + ".SourceStdDev", sourceStdDev);
+  verifyData.set(srcDescr + "--x--" + snkDescr + ".SinkVariance", sinkVar);
+  verifyData.set(srcDescr + "--x--" + snkDescr + ".SinkStdDev", sinkStdDev);
 
   delete ccfAlgo;
   delete sourceVarAlgo;
@@ -215,14 +219,15 @@ Pool AudioVerify::SetVerifyData()
   // audioCrossCorrSeq.
   Pool vPool;
 
-  vPool.set("Source", srcDescr);
-  vPool.set("Degraded", snkDescr);
-  vPool.set("AudioExists", audioExists);
-  vPool.set("CorrVector", corrVector);
-  vPool.set("CorrVectorSize", xCorrSize);
-  vPool.set("CorrVectorPeak", corrVectorPeak);
-  vPool.set("GainFactor", gainFactor);
-  vPool.set("RMSMatch", RMSMatch);
+  vPool.set(srcDescr + "--x--" + snkDescr + ".Source", srcDescr);
+  vPool.set(srcDescr + "--x--" + snkDescr + ".Degraded", snkDescr);
+  vPool.set(srcDescr + "--x--" + snkDescr + ".AudioExists", audioExists);
+  vPool.set(srcDescr + "--x--" + snkDescr + ".CorrVector", corrVector);
+  vPool.set(srcDescr + "--x--" + snkDescr + ".CorrVectorSize", xCorrSize);
+  vPool.set(srcDescr + "--x--" + snkDescr + ".CorrVectorPeak", 
+            corrVectorPeak);
+  vPool.set(srcDescr + "--x--" + snkDescr + ".GainFactor", gainFactor);
+  vPool.set(srcDescr + "--x--" + snkDescr + ".RMSMatch", RMSMatch);
 
   return vPool;
 }
@@ -230,31 +235,28 @@ Pool AudioVerify::SetVerifyData()
 // Store (for file printing) all the attributes in a Pool data structure.
 void AudioVerify::WriteToFile()
 {
-  // Set audioExists, gainFactor, audioSimilarityIndex, audioDelay, sourceRMS, 
-  // sinkRMS, RMSMatch after calculating sourceAutoCorrSeq, sinkAutoCorrSeq, 
-  // audioCrossCorrSeq.
   Pool vPool;
 
-  vPool.set(srcDescr + "--x--" + snkDescr + ".AudioExists", audioExists);
-  vPool.set(srcDescr + "--x--" + snkDescr + ".CorrVector", corrVector);
-  vPool.set(srcDescr + "--x--" + snkDescr + ".CorrVectorSize", xCorrSize);
-  vPool.set(srcDescr + "--x--" + snkDescr + ".CorrVectorPeak", 
-                 corrVectorPeak);
-  vPool.set(srcDescr + "--x--" + snkDescr + ".GainFactor", gainFactor);
-  vPool.set(srcDescr + "--x--" + snkDescr + ".RMSMatch", RMSMatch);
-
-  if (split == 1)
+  if (consoleOut == true)
   {
-    Output = AF.create("YamlOutput", "filename", outputFile);
-    
-    Output->input("pool").set(vPool);
-    
-    Output->compute();
-    
-    delete Output;
+    std::cout << std::endl;
+    std::cout << "Storing Audio verification details between " << srcDescr << 
+                 " and " << snkDescr << "externally...." << std::endl;
+    std::cout << "-------- writing results to file " << outputFile 
+              << " --------" << std::endl;
   }
 
-  return vPool;
+  vPool.merge(verifyData);
+  vPool.merge(verifyInfo);
+    
+  Output = AF.create("YamlOutput", "filename", outputFile);
+  Output->input("pool").set(vPool);
+  Output->compute();
+  delete Output;
+
+  if (consoleOut == true)
+    std::cout << "Audio verification details between " << srcDescr << " and " 
+              << snkDescr << "externally...." << std::endl;
 }
 
 // Print the members of the AudioLoad class to the console.
@@ -286,17 +288,23 @@ void AudioVerify::printPool()
   std::cout << "The following are data from internal data structure:" << 
                std::endl;
   std::cout << "Audio Source Signal : " << 
-               verifyData.value<std::string>("Source") << std::endl;
+               verifyInfo.value<std::string>(srcDescr + "--x--" + snkDescr + 
+                                             ".Source") << std::endl;
   std::cout << "Audio Sink Signal : " << 
-               verifyData.value<std::string>("Degraded") << std::endl;
-  std::cout << "Audio Present : " << verifyData.value<Real>("AudioExists") << 
-               std::endl;
-  std::cout << "CCF Peak : " << verifyData.value<Real>("CorrVectorPeak") << 
-               std::endl;
-  std::cout << "RMS Match : " << verifyData.value<Real>("RMSMatch") << 
-               std::endl;
-  std::cout << "Gain Factor : " << verifyData.value<Real>("GainFactor") << 
-               std::endl;
+               verifyInfo.value<std::string>(srcDescr + "--x--" + snkDescr + 
+                                             ".Degraded") << std::endl;
+  std::cout << "Audio Present : " << 
+               verifyInfo.value<Real>(srcDescr + "--x--" + snkDescr + 
+                                      ".AudioExists") << std::endl;
+  std::cout << "CCF Peak : " << 
+               verifyInfo.value<Real>(srcDescr + "--x--" + snkDescr + 
+                                      ".CorrVectorPeak") << std::endl;
+  std::cout << "RMS Match : " << 
+               verifyInfo.value<Real>(srcDescr + "--x--" + snkDescr + 
+                                      ".RMSMatch") << std::endl;
+  std::cout << "Gain Factor : " << 
+               verifyInfo.value<Real>(srcDescr + "--x--" + snkDescr + 
+                                      ".GainFactor") << std::endl;
 }
 
 // AudioVerify Destructor for closure.

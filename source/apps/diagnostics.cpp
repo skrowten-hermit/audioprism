@@ -70,22 +70,24 @@ int main(int argc, char** argv)
   // Load audio stream to a buffer for processing.
   AudioLoad srcLoader(stdAF, inConfig.icd.src, inConfig.icd.lofile, srcDescr,
                       inConfig.icf.lout, inConfig.icf.cout);
-  std::vector<Real> sourceBuffer = srcLoader.MonoBuffer;
-  Pool srcLPool = srcLoader.loadPool;
+  std::vector<Real> sourceBuffer = srcLoader.GetBuffer();
+  Pool srcLPool = srcLoader.GetLoaderData();
+  if (inConfig.icf.lout == true)
+    srcLoader.WriteToFile();
 
   // Extract audio attributes from the buffer.
   AudioAttrs srcAttrs(stdAF, sourceBuffer, srcLPool, srcDescr, 
                       inConfig.icf.aout, inConfig.icf.cout);
-  Pool sourceAttrs = srcAttrs.audioAttrs;
-  std::string adescr = srcAttrs.audioAttrs.value<std::string>("Description");
-  Real samplerate = srcAttrs.audioAttrs.value<Real>("SampleRate");
-  sourceAttrs.set("Description", adescr);
-  sourceAttrs.set("SampleRate", samplerate);
+  Pool sourceAttrs = srcAttrs.GetAttrData();
+  if (inConfig.icf.aout == true)
+    srcAttrs.WriteToFile();
 
   // Look for and identify potential defects in the audio buffer.
-  AudioBug srcDiagnose(stdAF, sourceBuffer, sourceAttrs, inConfig.icf.dout,
-                       inConfig.icf.cout);
-  Pool sourceBugs = srcDiagnose.defectsData;
+  AudioBug srcDiagnose(stdAF, sourceBuffer, sourceAttrs, srcDescr, 
+                       inConfig.icf.dout, inConfig.icf.cout);
+  Pool sourceBugs = srcDiagnose.GetBugsData();
+  if (inConfig.icf.dout == true)
+    srcDiagnose.WriteToFile();
 
   // Collect all the computed parameters in a data structure.
   Pool gatherData;
