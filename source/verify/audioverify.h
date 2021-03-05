@@ -98,9 +98,10 @@ class AudioVerify
     int AudioExists();
     Real CalcDelay();
     
-    // Functions for storing the attributes data in a pool data structure.
-    Pool SetVerifyData();
-    Pool SetVerifyData(std::string srcDescr, std::string snkDescr, int split);
+    /* Functions for storing the attributes data in a pool data structure or a
+       file. */
+    Pool SetVerifyData();  // For internal storage.
+    void WriteToFile(); // For external storage.
 
     // Function to display calculated parameters on console.
     void projectData();

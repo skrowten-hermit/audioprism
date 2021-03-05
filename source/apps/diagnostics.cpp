@@ -57,10 +57,10 @@ int main(int argc, char** argv)
   /* The following stores, processes and display each user input in and as a 
      struct data structure. */
   inProps inConfig = inOpts.storeInConfig();
-
   if (inConfig.icf.cout == true)
     inOpts.dispInputOpts();
 
+  // Extract filename from path.
   srcDescr = getFileName(inConfig.icd.src);
 
   // Instantiate and initialize the essentia library interface.
@@ -73,7 +73,7 @@ int main(int argc, char** argv)
   std::vector<Real> sourceBuffer = srcLoader.MonoBuffer;
   Pool srcLPool = srcLoader.loadPool;
 
-  // Extract audio attributes from the stream.
+  // Extract audio attributes from the buffer.
   AudioAttrs srcAttrs(stdAF, sourceBuffer, srcLPool, srcDescr, 
                       inConfig.icf.aout, inConfig.icf.cout);
   Pool sourceAttrs = srcAttrs.audioAttrs;
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
   sourceAttrs.set("Description", adescr);
   sourceAttrs.set("SampleRate", samplerate);
 
-  // Look for and identify potential defects in the audio stream.
+  // Look for and identify potential defects in the audio buffer.
   AudioBug srcDiagnose(stdAF, sourceBuffer, sourceAttrs, inConfig.icf.dout,
                        inConfig.icf.cout);
   Pool sourceBugs = srcDiagnose.defectsData;

@@ -228,8 +228,7 @@ Pool AudioVerify::SetVerifyData()
 }
 
 // Store (for file printing) all the attributes in a Pool data structure.
-Pool AudioVerify::SetVerifyData(std::string srcDescr, 
-                                std::string snkDescr, int split)
+void AudioVerify::WriteToFile()
 {
   // Set audioExists, gainFactor, audioSimilarityIndex, audioDelay, sourceRMS, 
   // sinkRMS, RMSMatch after calculating sourceAutoCorrSeq, sinkAutoCorrSeq, 

@@ -47,44 +47,44 @@
 
 int main(int argc, char** argv)
 {
-  std::string app = "ap-all";
+  std::string app = "ap-all"; // Application name shorthand.
   std::string srcDescr;
   std::string snkDescr;
 
-  // The following function processes, parses a set of user inputs and returns
-  // an object that enables to store them individually to be accessed later.
+  /* The following function processes, parses a set of user inputs and returns
+     an object that enables to store them individually to be accessed later. */
   inputOpts inOpts = getOptions(argc, argv, app);
   creditLibAV();
   
-  // The following stores each user input in and as a struct data structure.
+  /* The following stores, processes and display each user input in and as a 
+     struct data structure. */
   inProps inConfig = inOpts.storeInConfig();
-
   if (inConfig.icf.cout == true)
     inOpts.dispInputOpts();
 
-  essentia::init();
-
-  esstd::AlgorithmFactory& stdAF = esstd::AlgorithmFactory::instance();
-
+  // Extract filenames from paths.
   srcDescr = getFileName(inConfig.icd.src);
   snkDescr = getFileName(inConfig.icd.snk);
 
+  // Instantiate and initialize the essentia library interface.
+  essentia::init();
+  esstd::AlgorithmFactory& stdAF = esstd::AlgorithmFactory::instance();
+
+  // Load audio streams to buffers for processing.
   AudioLoad srcLoader(stdAF, inConfig.icd.src, inConfig.icd.lofile, srcDescr,
                       inConfig.icf.lout, inConfig.icf.cout);
   AudioLoad snkLoader(stdAF, inConfig.icd.snk, inConfig.icd.lofile, snkDescr,
                       inConfig.icf.lout, inConfig.icf.cout);
-
   std::vector<Real> sourceBuffer = srcLoader.MonoBuffer;
   std::vector<Real> sinkBuffer = snkLoader.MonoBuffer;
-  
   Pool srcLPool = srcLoader.loadPool;
   Pool snkLPool = snkLoader.loadPool;
 
+  // Extract audio attributes from the streams.
   AudioAttrs srcAttrs(stdAF, sourceBuffer, srcLPool, srcDescr, 
                       inConfig.icf.aout, inConfig.icf.cout);
   AudioAttrs snkAttrs(stdAF, sinkBuffer, snkLPool, snkDescr, inConfig.icf.aout,
                       inConfig.icf.cout);
-
   Pool sourceAttrs = srcAttrs.audioAttrs;
   std::string srcdescr = srcAttrs.audioAttrs.value<std::string>("Description");
   Real srcsamplerate = srcAttrs.audioAttrs.value<Real>("SampleRate");

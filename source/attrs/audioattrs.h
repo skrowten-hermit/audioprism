@@ -103,9 +103,10 @@ class AudioAttrs
     Real CalcSNR(); // Get the signal-to-Noise Ratio of the audio signal.
     Real CalcLoudness(); // Get the loudness of the audio signal.
     
-    // Functions for storing the attributes data in a pool data structure.
-    Pool StoreAttrs();
-    Pool StoreAttrs(std::string description, int split); // (for file printing)
+    /* Functions for storing the attributes data in a pool data structure or a
+       file. */
+    Pool StoreAttrs();  // For internal storage.
+    void WriteToFile(); // For external storage.
 
     // Function to display calculated parameters on console.
     void projectData();

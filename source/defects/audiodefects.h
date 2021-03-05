@@ -95,9 +95,10 @@ class AudioBug
     void DetectEcho();
     void DetectMetallicAudio();
     
-    // Functions for storing the defects data in a pool data structure.
-    Pool SetDefectInfo();
-    Pool SetDefectInfo(std::string description, int split);
+    /* Functions for storing the attributes data in a pool data structure or a
+       file. */
+    Pool SetDefectInfo();  // For internal storage.
+    void WriteToFile(); // For external storage.
 
     // Function to display calculated parameters on console.
     void projectData();

@@ -282,10 +282,17 @@ Pool AudioBug::SetDefectInfo()
 }
 
 // Store (for file printing) all the attributes in a Pool data structure.
-Pool AudioBug::SetDefectInfo(std::string description, int split)
+void AudioBug::WriteToFile()
 {
   Pool dPool;
-  // Return if silence exists or not, location(s) (in time) if exists.
+
+  if (consoleOut == true)
+  {
+    std::cout << std::endl;
+    std::cout << "Storing Audio data from " << fileTag << " externally...." 
+              << std::endl;
+  }
+
   dPool.set(description + ".ClickExists", clickExists);
   dPool.set(description + ".ClickStarts", clickStarts);
   dPool.set(description + ".ClickEnds", clickEnds);
@@ -300,21 +307,20 @@ Pool AudioBug::SetDefectInfo(std::string description, int split)
   dPool.set(description + ".NumNoiseBursts", numNBSamples);
   //dPool.set(description + ".NoiseBurstsDurations", nbLengths);
 
-  if (split == 1)
+  if (consoleOut == true)
   {
     std::cout << "-------- writing results to file " << outputFile 
               << " --------" << std::endl;
-              
-    Output = AF.create("YamlOutput", "filename", outputFile);
-    
-    Output->input("pool").set(dPool);
-    
-    Output->compute();
-    
-    delete Output;
   }
+    
+  Output = AF.create("YamlOutput", "filename", outputFile);
+  Output->input("pool").set(dPool);
+  Output->compute();
+  delete Output;
 
-  return dPool;
+  if (consoleOut == true)
+    std::cout << "Audio defects from " << fileTag << " stored externally...." 
+              << std::endl;
 }
 
 // Check for silence within an audio signal.

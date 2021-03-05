@@ -187,7 +187,7 @@ Pool AudioLoad::StoreAudio()
 }
 
 // Store (for file printing) all the audio data in a Pool data structure.
-Pool AudioLoad::StoreAudio(std::string description, int split)
+void AudioLoad::WriteToFile()
 {
   Pool aPool;
 
@@ -211,24 +211,20 @@ Pool AudioLoad::StoreAudio(std::string description, int split)
   aPool.merge(audioInfo);
   aPool.merge(audioData);
 
-  if (split == 1)
+  if (consoleOut == true)
   {
     std::cout << "-------- writing results to file " << outputFile 
               << " --------" << std::endl;
-    
-    Output = AF.create("YamlOutput", "filename", outputFile);
-    Output->input("pool").set(audioData);
-    Output->input("pool").set(audioInfo);
-    Output->compute();
-
-    delete Output;
   }
+    
+  Output = AF.create("YamlOutput", "filename", outputFile);
+  Output->input("pool").set(aPool);
+  Output->compute();
+  delete Output;
 
   if (consoleOut == true)
     std::cout << "Audio data from " << fileTag << " stored externally...." << 
                  std::endl;
-
-  return aPool;
 }
 
 // Print the members of the AudioLoad class to the console.

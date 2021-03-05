@@ -90,9 +90,10 @@ class AudioLoad
     std::vector<Real> GetLeftChannel();
     std::vector<Real> GetRightChannel();
     
-    // Functions for storing the attributes data in a pool data structure.
-    Pool StoreAudio();
-    Pool StoreAudio(std::string description, int split); // (for file printing)
+    /* Functions for storing the attributes data in a pool data structure or a
+       file. */
+    Pool StoreAudio();  // For internal storage.
+    void WriteToFile(); // For external storage.
 
     // Function to display calculated parameters on console.
     void projectData();

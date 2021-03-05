@@ -339,9 +339,16 @@ Pool AudioAttrs::StoreAttrs()
 }
 
 // Store (for file printing) all the attributes in a Pool data structure.
-Pool AudioAttrs::StoreAttrs(std::string description, int split)
+void AudioAttrs::WriteToFile()
 {
   Pool attrsPool;
+
+  if (consoleOut == true)
+  {
+    std::cout << std::endl;
+    std::cout << "Storing Audio data from " << fileTag << " externally...." 
+              << std::endl;
+  }
   
   attrsPool.set(description + ".Description", fileTag);
   attrsPool.set(description + ".SampleSize", SampleSize);
@@ -354,20 +361,20 @@ Pool AudioAttrs::StoreAttrs(std::string description, int split)
   attrsPool.set(description + ".SNR", signalSNR);
   attrsPool.set(description + ".Loudness", signalLoudness);
 
-  if (split == 1)
+  if (consoleOut == true)
   {
     std::cout << "-------- writing results to file " << outputFile 
               << " --------" << std::endl;
-
-    Output = AF.create("YamlOutput", "filename", outputFile);
-    
-    Output->input("pool").set(attrsPool);
-    Output->compute();
-    
-    delete Output;
   }
 
-  return attrsPool;
+  Output = AF.create("YamlOutput", "filename", outputFile);
+  Output->input("pool").set(attrsPool);
+  Output->compute();
+  delete Output;
+
+  if (consoleOut == true)
+    std::cout << "Audio attributes from " << fileTag << " stored externally...."
+              << std::endl;
 }
 
 // Print the members of the AudioLoad class to the console.
