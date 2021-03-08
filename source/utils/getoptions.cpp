@@ -136,7 +136,7 @@ inputOpts getOptions(int argcount, char** argvals, std::string appl)
     spval = false;
 
   bool outval = false;
-  std::vector<std::string> o_files;
+  std::vector<std::string> o_files {""};
   if (result.count("outfile"))
     outval = result["outfile"].as<bool>();
   else
