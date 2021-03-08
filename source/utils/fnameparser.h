@@ -47,7 +47,9 @@
 
 using std::string;
 
-string getFileName(const string& s);
+string getFileName(const string& s);  // Gets filename with extension.
+
+string getFileDescr(const string& s);  // Gets filename without extension.
 
 
 #endif

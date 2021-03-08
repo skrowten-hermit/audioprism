@@ -36,9 +36,10 @@
 // AudioBug Constructor for initialization.
 AudioBug::AudioBug(esstd::AlgorithmFactory& saf, 
                    std::vector<Real> audioSigVector, Pool attrs, 
-                   std::string description, int saveData, bool conOut) : 
-                  saveOutput(saveData), consoleOut(conOut), AF(saf), 
-                  audioSignalVector(audioSigVector), fileTag(description)
+                   std::string description, int saveData, std::string outFile, 
+                   bool conOut) : outputFile(outFile), saveOutput(saveData), 
+                  consoleOut(conOut), AF(saf), audioSignalVector(audioSigVector), 
+                  fileTag(description)
 {
   //essentia::init();
 

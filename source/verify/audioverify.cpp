@@ -39,8 +39,8 @@ AudioVerify::AudioVerify(esstd::AlgorithmFactory& saf,
                          std::vector<Real> source, 
                          std::vector<Real> sink, 
                          Pool srcAttrs, Pool snkAttrs, std::string srcdesc, 
-                         std::string snkdesc, std::string outFile, 
-                         int saveData, bool conOut) : 
+                         std::string snkdesc, int saveData, std::string outFile, 
+                         bool conOut) : 
                         outputFile(outFile), saveOutput(saveData), 
                         consoleOut(conOut), AF(saf), sourceSignal(source), 
                         sinkSignal(sink), srcDescr(srcdesc), snkDescr(snkdesc)
@@ -222,7 +222,6 @@ Pool AudioVerify::SetVerifyData()
   vPool.set(srcDescr + "--x--" + snkDescr + ".Source", srcDescr);
   vPool.set(srcDescr + "--x--" + snkDescr + ".Degraded", snkDescr);
   vPool.set(srcDescr + "--x--" + snkDescr + ".AudioExists", audioExists);
-  vPool.set(srcDescr + "--x--" + snkDescr + ".CorrVector", corrVector);
   vPool.set(srcDescr + "--x--" + snkDescr + ".CorrVectorSize", xCorrSize);
   vPool.set(srcDescr + "--x--" + snkDescr + ".CorrVectorPeak", 
             corrVectorPeak);
@@ -241,7 +240,7 @@ void AudioVerify::WriteToFile()
   {
     std::cout << std::endl;
     std::cout << "Storing Audio verification details between " << srcDescr << 
-                 " and " << snkDescr << "externally...." << std::endl;
+                 " and " << snkDescr << " externally...." << std::endl;
     std::cout << "-------- writing results to file " << outputFile 
               << " --------" << std::endl;
   }
@@ -256,7 +255,7 @@ void AudioVerify::WriteToFile()
 
   if (consoleOut == true)
     std::cout << "Audio verification details between " << srcDescr << " and " 
-              << snkDescr << "externally...." << std::endl;
+              << snkDescr << " externally...." << std::endl;
 }
 
 // Print the members of the AudioLoad class to the console.

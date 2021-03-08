@@ -35,7 +35,7 @@
 
 // AudioLoad Constructor for initialization.
 AudioLoad::AudioLoad(esstd::AlgorithmFactory& saf, std::string inFile, 
-                     std::string outFile, std::string description, int saveData,
+                     std::string description, int saveData, std::string outFile,
                      bool conOut) : audioFile(inFile), outputFile(outFile), 
                     saveOutput(saveData), consoleOut(conOut), AF(saf), 
                     fileTag(description)

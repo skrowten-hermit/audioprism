@@ -103,7 +103,8 @@ class AudioAttrs
     // Initialization and de-initialization of the attribute class.
     AudioAttrs(esstd::AlgorithmFactory& saf, 
                std::vector<Real> audioSigVector, Pool attrPool, 
-               std::string description, int saveData, bool conOut);
+               std::string description, int saveData, std::string outFile, 
+               bool conOut);
     ~AudioAttrs();
 
     // Get a non-modifiable data for processing.

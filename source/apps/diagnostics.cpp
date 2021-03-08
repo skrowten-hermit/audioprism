@@ -47,7 +47,7 @@
 int main(int argc, char** argv)
 {
   std::string app = "ap-d"; // Application name shorthand.
-  std::string srcDescr;
+  std::string srcDescr, srcFileName;
 
   /* The following function processes, parses a set of user inputs and returns
      an object that enables to store them individually to be accessed later. */
@@ -61,15 +61,16 @@ int main(int argc, char** argv)
     inOpts.dispInputOpts();
 
   // Extract filename from path.
-  srcDescr = getFileName(inConfig.icd.src);
+  srcFileName = getFileName(inConfig.icd.src);
+  srcDescr = getFileDescr(inConfig.icd.src);
 
   // Instantiate and initialize the essentia library interface.
   essentia::init();
   esstd::AlgorithmFactory& stdAF = esstd::AlgorithmFactory::instance();
 
   // Load audio stream to a buffer for processing.
-  AudioLoad srcLoader(stdAF, inConfig.icd.src, inConfig.icd.lofile, srcDescr,
-                      inConfig.icf.lout, inConfig.icf.cout);
+  AudioLoad srcLoader(stdAF, inConfig.icd.src, srcDescr, inConfig.icf.lout, 
+                      inConfig.icd.lofile, inConfig.icf.cout);
   std::vector<Real> sourceBuffer = srcLoader.GetBuffer();
   Pool srcLPool = srcLoader.GetLoaderData();
   if (inConfig.icf.lout == true)
@@ -77,14 +78,16 @@ int main(int argc, char** argv)
 
   // Extract audio attributes from the buffer.
   AudioAttrs srcAttrs(stdAF, sourceBuffer, srcLPool, srcDescr, 
-                      inConfig.icf.aout, inConfig.icf.cout);
+                      inConfig.icf.aout, inConfig.icd.aofile, 
+                      inConfig.icf.cout);
   Pool sourceAttrs = srcAttrs.GetAttrData();
   if (inConfig.icf.aout == true)
     srcAttrs.WriteToFile();
 
   // Look for and identify potential defects in the audio buffer.
   AudioBug srcDiagnose(stdAF, sourceBuffer, sourceAttrs, srcDescr, 
-                       inConfig.icf.dout, inConfig.icf.cout);
+                       inConfig.icf.dout, inConfig.icd.dofile, 
+                       inConfig.icf.cout);
   Pool sourceBugs = srcDiagnose.GetBugsData();
   if (inConfig.icf.dout == true)
     srcDiagnose.WriteToFile();
@@ -96,6 +99,21 @@ int main(int argc, char** argv)
 
   // Generate and display the final result.
   generateResults(gatherData);
+
+  // Generate the output result file.
+  if (inConfig.icf.mout == true)
+  {
+    std::cout << "-------- writing results to file " << inConfig.icd.mofile 
+              << " --------" << std::endl;
+              
+    esstd::Algorithm* Output;
+    Output = stdAF.create("YamlOutput", "filename", inConfig.icd.mofile);
+    Output->input("pool").set(gatherData);
+    Output->compute();
+    delete Output;
+    
+    std::cout << "Output written successfully...." << std::endl;
+  }
 
   // Teardown the essentia library interface.
   essentia::shutdown();

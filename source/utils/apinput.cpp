@@ -39,52 +39,24 @@ inputOpts::inputOpts(std::string spath, std::string tpath, bool split,
 		                 outfiles(files), consoleout(scrout)
 {
   int numfiles = files.size();
-  
-  if (numfiles >= 1)
+
+  std::cout << "No. of Files : " << numfiles << std::endl;
+
+  if (files[0] == "defaults" && numfiles == 1)
   {
     mainout = true;
-    if (files[0] != "")
-      moutfile = files[0];
-    else
-      moutfile = DEFAULT_OUTPUT;
-
+    moutfile = DEFAULT_OUTPUT;
     if (split == true)
-    {
-      if (numfiles >= 2)
-      {
-        loaderout = true;
-        if (files[1] != "")
-	        loutfile = files[1];
-        else
-          loutfile = DEFAULT_LOUTPUT;
+    {  
+      loaderout = true;
+      attrout = true;
+      verifyout = true;
+      defectout = true;
 
-        if (numfiles >= 3)
-        {
-          attrout = true;
-          if (files[2] != "")
-	          aoutfile = files[2];
-          else
-	          aoutfile = DEFAULT_AOUTPUT;
-
-          if (numfiles >= 4)
-          {
-            verifyout = true;
-            if (files[3] != "")
-              voutfile = files[3];
-            else
-              voutfile = DEFAULT_VOUTPUT;
-
-            if (numfiles == 5)
-            {
-              defectout = true;
-              if (files[4] != "")
-                doutfile = files[4];
-              else
-                doutfile = DEFAULT_DOUTPUT;
-            }
-          }
-        }
-      }
+      loutfile = DEFAULT_LOUTPUT;
+      aoutfile = DEFAULT_AOUTPUT;
+      voutfile = DEFAULT_VOUTPUT;
+      doutfile = DEFAULT_DOUTPUT;
     }
     else
     {
@@ -101,17 +73,79 @@ inputOpts::inputOpts(std::string spath, std::string tpath, bool split,
   }
   else
   {
-    mainout = false;
-    loaderout = false;
-    attrout = false;
-    verifyout = false;
-    defectout = false;
+    if (numfiles >= 1)
+    {
+      mainout = true;
+      if (files[0] != "")
+        moutfile = files[0];
+      else
+        moutfile = DEFAULT_OUTPUT;
 
-    moutfile = "";
-    loutfile = "";
-    aoutfile = "";
-    voutfile = "";
-    doutfile = "";
+      if (split == true)
+      {
+        if (numfiles >= 2)
+        {
+          loaderout = true;
+          if (files[1] != "")
+	          loutfile = files[1];
+          else
+            loutfile = DEFAULT_LOUTPUT;
+
+          if (numfiles >= 3)
+          {
+            attrout = true;
+            if (files[2] != "")
+	            aoutfile = files[2];
+            else
+	            aoutfile = DEFAULT_AOUTPUT;
+
+            if (numfiles >= 4)
+            {
+              verifyout = true;
+              if (files[3] != "")
+                voutfile = files[3];
+              else
+                voutfile = DEFAULT_VOUTPUT;
+
+              if (numfiles == 5)
+              {
+                defectout = true;
+                if (files[4] != "")
+                  doutfile = files[4];
+                else
+                  doutfile = DEFAULT_DOUTPUT;
+              }
+            }
+          }
+        }
+      }
+      else
+      {
+        loaderout = false;
+        attrout = false;
+        verifyout = false;
+        defectout = false;
+
+        loutfile = "";
+        aoutfile = "";
+        voutfile = "";
+        doutfile = "";
+      }
+    }
+    else
+    {
+      mainout = false;
+      loaderout = false;
+      attrout = false;
+      verifyout = false;
+      defectout = false;
+
+      moutfile = "";
+      loutfile = "";
+      aoutfile = "";
+      voutfile = "";
+      doutfile = "";
+    }
   }
 }
 

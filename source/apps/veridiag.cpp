@@ -48,8 +48,8 @@
 int main(int argc, char** argv)
 {
   std::string app = "ap-all"; // Application name shorthand.
-  std::string srcDescr;
-  std::string snkDescr;
+  std::string srcDescr, srcFileName;
+  std::string snkDescr, snkFileName;
 
   /* The following function processes, parses a set of user inputs and returns
      an object that enables to store them individually to be accessed later. */
@@ -63,18 +63,20 @@ int main(int argc, char** argv)
     inOpts.dispInputOpts();
 
   // Extract filenames from paths.
-  srcDescr = getFileName(inConfig.icd.src);
-  snkDescr = getFileName(inConfig.icd.snk);
+  srcFileName = getFileName(inConfig.icd.src);
+  srcDescr = getFileDescr(inConfig.icd.src);
+  snkFileName = getFileName(inConfig.icd.snk);
+  snkDescr = getFileDescr(inConfig.icd.snk);
 
   // Instantiate and initialize the essentia library interface.
   essentia::init();
   esstd::AlgorithmFactory& stdAF = esstd::AlgorithmFactory::instance();
 
   // Load audio streams to buffers for processing.
-  AudioLoad srcLoader(stdAF, inConfig.icd.src, inConfig.icd.lofile, srcDescr,
-                      inConfig.icf.lout, inConfig.icf.cout);
-  AudioLoad snkLoader(stdAF, inConfig.icd.snk, inConfig.icd.lofile, snkDescr,
-                      inConfig.icf.lout, inConfig.icf.cout);
+  AudioLoad srcLoader(stdAF, inConfig.icd.src, srcDescr, inConfig.icf.lout, 
+                      inConfig.icd.lofile, inConfig.icf.cout);
+  AudioLoad snkLoader(stdAF, inConfig.icd.snk, snkDescr, inConfig.icf.lout, 
+                      inConfig.icd.lofile, inConfig.icf.cout);
   std::vector<Real> sourceBuffer = srcLoader.GetBuffer();
   std::vector<Real> sinkBuffer = snkLoader.GetBuffer();
   Pool srcLPool = srcLoader.GetLoaderData();
@@ -87,8 +89,10 @@ int main(int argc, char** argv)
 
   // Extract audio attributes from the buffers.
   AudioAttrs srcAttrs(stdAF, sourceBuffer, srcLPool, srcDescr, 
-                      inConfig.icf.aout, inConfig.icf.cout);
-  AudioAttrs snkAttrs(stdAF, sinkBuffer, snkLPool, snkDescr, inConfig.icf.aout,
+                      inConfig.icf.aout, inConfig.icd.aofile, 
+                      inConfig.icf.cout);
+  AudioAttrs snkAttrs(stdAF, sinkBuffer, snkLPool, snkDescr, 
+                      inConfig.icf.aout, inConfig.icd.aofile, 
                       inConfig.icf.cout);
   Pool sourceAttrs = srcAttrs.GetAttrData();
   Pool sinkAttrs = snkAttrs.GetAttrData();
@@ -100,9 +104,11 @@ int main(int argc, char** argv)
 
   // Look for and identify potential defects in the audio buffers.
   AudioBug srcDiagnose(stdAF, sourceBuffer, sourceAttrs, srcDescr, 
-                       inConfig.icf.dout, inConfig.icf.cout);
+                       inConfig.icf.dout, inConfig.icd.dofile, 
+                       inConfig.icf.cout);
   AudioBug snkDiagnose(stdAF, sinkBuffer, sinkAttrs, snkDescr, 
-                       inConfig.icf.dout, inConfig.icf.cout);
+                       inConfig.icf.dout, inConfig.icd.dofile, 
+                       inConfig.icf.cout);
   Pool sourceBugs = srcDiagnose.GetBugsData();
   Pool sinkBugs = snkDiagnose.GetBugsData();
   if (inConfig.icf.dout == true)
@@ -114,7 +120,7 @@ int main(int argc, char** argv)
   // Verify the audio by comparing to the source buffer.
   AudioVerify validate(stdAF, sourceBuffer, sinkBuffer, 
                        sourceAttrs, sinkAttrs, srcDescr, snkDescr, 
-                       inConfig.icd.vofile, inConfig.icf.vout, 
+                       inConfig.icf.vout, inConfig.icd.vofile, 
                        inConfig.icf.cout);
   Pool validateAudio = validate.GetValidationData();
   if (inConfig.icf.vout == true)
@@ -130,6 +136,21 @@ int main(int argc, char** argv)
 
   // Generate and display the final result.
   generateResults(gatherData);
+
+  // Generate the output result file.
+  if (inConfig.icf.mout == true)
+  {
+    std::cout << "-------- writing results to file " << inConfig.icd.mofile 
+              << " --------" << std::endl;
+              
+    esstd::Algorithm* Output;
+    Output = stdAF.create("YamlOutput", "filename", inConfig.icd.mofile);
+    Output->input("pool").set(gatherData);
+    Output->compute();
+    delete Output;
+    
+    std::cout << "Output written successfully...." << std::endl;
+  }
 
   // Teardown the essentia library interface.
   essentia::shutdown();

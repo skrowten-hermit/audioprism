@@ -100,7 +100,8 @@ class AudioVerify
                 std::vector<Real> source, std::vector<Real> sink, 
                 Pool srcAttrs, Pool snkAttrs, 
                 std::string srcdesc, std::string snkdesc, 
-                std::string description, int saveData, bool conOut);
+                int saveData, std::string outFile, 
+                bool conOut);
     ~AudioVerify();
 
     // Get a non-modifiable data for processing.

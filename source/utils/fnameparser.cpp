@@ -33,16 +33,31 @@
 
 #include "fnameparser.h"
 
+
 string getFileName(const string& s) 
 {
-   size_t i = s.rfind(SEP, s.length());
-   
-   if (i != string::npos) 
-   {
-      return(s.substr(i+1, s.length() - i));
-   }
+  size_t i = s.rfind(SEP, s.length());
 
-   return("");
+  if (i != string::npos) 
+  {
+    return(s.substr(i + 1, s.length() - i));
+  }
+
+  return("");
+}
+
+
+string getFileDescr(const string& s)
+{
+  const string fnwithextn = getFileName(s);
+  size_t i = fnwithextn.rfind('.', fnwithextn.length());
+
+  if (i != string::npos) 
+  {
+    return(fnwithextn.substr(0, i));
+  }
+
+  return("");
 }
 
 /*
@@ -51,6 +66,7 @@ int main(int argc, char** argv)
    string path = argv[1];
 
    std::cout << "The file name is \"" << getFileName(path) << "\"\n";
+   std::cout << "The file name (without extension) is \"" << getFileDescr(path) << "\"\n";
 
    return 0;
 }

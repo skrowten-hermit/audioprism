@@ -86,7 +86,7 @@ class AudioLoad
   public:
     // Initialization and de-initialization of the loader class.
     AudioLoad(esstd::AlgorithmFactory& saf, std::string inFile, 
-              std::string outFile, std::string description, int saveData,
+              std::string description, int saveData, std::string outFile,
               bool conOut);
     ~AudioLoad();
 

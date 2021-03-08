@@ -94,8 +94,9 @@ class AudioBug
     
   public:
     // Initialization and de-initialization of the defects class.
-    AudioBug(esstd::AlgorithmFactory& saf, std::vector<Real> audioSigVector, 
-             Pool attrsData, std::string description, int saveData, 
+    AudioBug(esstd::AlgorithmFactory& saf, 
+             std::vector<Real> audioSigVector, Pool attrsData, 
+             std::string description, int saveData, std::string outFile,
              bool conOut);
     ~AudioBug();
 

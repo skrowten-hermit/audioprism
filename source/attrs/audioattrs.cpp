@@ -34,10 +34,11 @@
 #include "audioattrs.h"
 
 // AudioAttrs Constructor for initialization.
-AudioAttrs::AudioAttrs(esstd::AlgorithmFactory& saf, 
+AudioAttrs::AudioAttrs(esstd::AlgorithmFactory& saf,
                        std::vector<Real> audioSigVector, 
                        Pool attrPool, std::string description, 
-                       int saveData, bool conOut) : saveOutput(saveData), 
+                       int saveData, std::string outFile, bool conOut) : 
+                      outputFile(outFile), saveOutput(saveData), 
                       consoleOut(conOut), AF(saf), signalVector(audioSigVector), 
                       fileTag(description)
 {

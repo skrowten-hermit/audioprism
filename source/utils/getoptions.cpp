@@ -60,6 +60,7 @@ inputOpts getOptions(int argcount, char** argvals, std::string appl)
   }
 
   cxxopts::Options options(appname, appdescr);
+  std::string flistdescr;
 
   if (type == 0 || type == 1)
   {
@@ -71,10 +72,13 @@ inputOpts getOptions(int argcount, char** argvals, std::string appl)
         //("d,debug", "Enable debugging") // a bool parameter
         ("p,splitoutput", "Split the output to separate files", 
                           cxxopts::value<bool>()->default_value("false"))
-        ("o,outfile", "Output file(s), separated by \',\' if multiple output "
-                      "files (only if -p or --splitoutput is set) needed. The "
-                      "order is - main, loader, attributes, verify, defects.", 
-                      cxxopts::value<std::vector<std::string>>()->implicit_value(""))
+        ("o,outfile", "Enable directing output to file(s)", 
+                      cxxopts::value<bool>()->default_value("false"))
+        ("l,filelist", "Output file(s), separated by \',\' if multiple output "
+                       "files (only if -p or --splitoutput is set) needed. The "
+                       "order is - main, loader, attributes, verify, defects "
+                       "(leave a blank wherever not applicable/ not required)", 
+                       cxxopts::value<std::vector<std::string>>()->default_value(",,,,"))
         ("v,verbose", "Verbose output", 
                       cxxopts::value<bool>()->default_value("false"))
         ("h,help", "Print usage")
@@ -88,10 +92,13 @@ inputOpts getOptions(int argcount, char** argvals, std::string appl)
         //("d,debug", "Enable debugging") // a bool parameter
         ("p,splitoutput", "Split the output to separate files", 
                           cxxopts::value<bool>()->default_value("false"))
-        ("o,outfile", "Output file(s), separated by \',\' if multiple output "
-                      "files (only if -p or --splitoutput is set) needed. The "
-                      "order is - main, loader, attributes, verify, defects.", 
-                      cxxopts::value<std::vector<std::string>>()->implicit_value(""))
+        ("o,outfile", "Enable directing output to file(s)", 
+                      cxxopts::value<bool>()->default_value("false"))
+        ("l,filelist", "Output file(s), separated by \',\' if multiple output "
+                       "files (only if -p or --splitoutput is set) needed. The "
+                       "order is - main, loader, attributes, verify, defects "
+                       "(leave a blank wherever not applicable/ not required)", 
+                       cxxopts::value<std::vector<std::string>>()->default_value(",,,,"))
         ("v,verbose", "Verbose output", 
                       cxxopts::value<bool>()->default_value("false"))
         ("h,help", "Print usage")
@@ -127,13 +134,20 @@ inputOpts getOptions(int argcount, char** argvals, std::string appl)
     spval = result["splitoutput"].as<bool>();
   else
     spval = false;
-  
+
+  bool outval = false;
   std::vector<std::string> o_files;
   if (result.count("outfile"))
-    o_files = result["outfile"].as<std::vector<std::string>>();
-  //else
-  //  o_files.push_back("");
-    
+    outval = result["outfile"].as<bool>();
+  else
+    outval = false;
+
+  if (result.count("filelist") && outval == true)
+    o_files = result["filelist"].as<std::vector<std::string>>();
+  else if (!result.count("filelist") && outval == true)
+    o_files = {"defaults"};
+  else if (result.count("filelist") && outval == false)
+    o_files = result["filelist"].as<std::vector<std::string>>();
 
   bool con_out = false;
   if (result.count("verbose"))
