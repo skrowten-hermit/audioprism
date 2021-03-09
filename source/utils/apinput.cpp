@@ -40,8 +40,6 @@ inputOpts::inputOpts(std::string spath, std::string tpath, bool split,
 {
   int numfiles = files.size();
 
-  std::cout << "No. of Files : " << numfiles << std::endl;
-
   if (files[0] == "defaults" && numfiles == 1)
   {
     mainout = true;
