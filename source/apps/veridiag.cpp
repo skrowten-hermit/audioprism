@@ -51,6 +51,8 @@ int main(int argc, char** argv)
   std::string srcDescr, srcFileName;
   std::string snkDescr, snkFileName;
 
+  Pool gatherData;
+
   /* The following function processes, parses a set of user inputs and returns
      an object that enables to store them individually to be accessed later. */
   inputOpts inOpts = getOptions(argc, argv, app);
@@ -72,67 +74,74 @@ int main(int argc, char** argv)
   essentia::init();
   esstd::AlgorithmFactory& stdAF = esstd::AlgorithmFactory::instance();
 
-  // Load audio streams to buffers for processing.
+  // Load source audio stream to buffer for processing.
   AudioLoad srcLoader(stdAF, inConfig.icd.src, srcDescr, inConfig.icf.lout, 
                       inConfig.icd.lofile, inConfig.icf.cout);
-  AudioLoad snkLoader(stdAF, inConfig.icd.snk, snkDescr, inConfig.icf.lout, 
-                      inConfig.icd.lofile, inConfig.icf.cout);
   std::vector<Real> sourceBuffer = srcLoader.GetBuffer();
-  std::vector<Real> sinkBuffer = snkLoader.GetBuffer();
   Pool srcLPool = srcLoader.GetLoaderData();
-  Pool snkLPool = snkLoader.GetLoaderData();
   if (inConfig.icf.lout == true)
-  {
     srcLoader.WriteToFile();
-    snkLoader.WriteToFile();
-  }
 
-  // Extract audio attributes from the buffers.
+  // Extract audio attributes from the source buffer.
   AudioAttrs srcAttrs(stdAF, sourceBuffer, srcLPool, srcDescr, 
                       inConfig.icf.aout, inConfig.icd.aofile, 
                       inConfig.icf.cout);
-  AudioAttrs snkAttrs(stdAF, sinkBuffer, snkLPool, snkDescr, 
-                      inConfig.icf.aout, inConfig.icd.aofile, 
-                      inConfig.icf.cout);
   Pool sourceAttrs = srcAttrs.GetAttrData();
-  Pool sinkAttrs = snkAttrs.GetAttrData();
   if (inConfig.icf.aout == true)
-  {
     srcAttrs.WriteToFile();
-    snkAttrs.WriteToFile();
-  }
 
-  // Look for and identify potential defects in the audio buffers.
+  // Look for and identify potential defects in the source audio buffer.
   AudioBug srcDiagnose(stdAF, sourceBuffer, sourceAttrs, srcDescr, 
                        inConfig.icf.dout, inConfig.icd.dofile, 
                        inConfig.icf.cout);
-  AudioBug snkDiagnose(stdAF, sinkBuffer, sinkAttrs, snkDescr, 
-                       inConfig.icf.dout, inConfig.icd.dofile, 
-                       inConfig.icf.cout);
   Pool sourceBugs = srcDiagnose.GetBugsData();
-  Pool sinkBugs = snkDiagnose.GetBugsData();
   if (inConfig.icf.dout == true)
-  {
     srcDiagnose.WriteToFile();
-    snkDiagnose.WriteToFile();
-  }
 
-  // Verify the audio by comparing to the source buffer.
-  AudioVerify validate(stdAF, sourceBuffer, sinkBuffer, 
-                       sourceAttrs, sinkAttrs, srcDescr, snkDescr, 
-                       inConfig.icf.vout, inConfig.icd.vofile, 
-                       inConfig.icf.cout);
-  Pool validateAudio = validate.GetValidationData();
-  if (inConfig.icf.vout == true)
-    validate.WriteToFile();
-
-  // Collect all the computed parameters in a data structure.
-  Pool gatherData;
+  // Collect all the computed source parameters in a data structure.
   gatherData.merge(sourceAttrs);
-  gatherData.merge(sinkAttrs);
   gatherData.merge(sourceBugs);
-  gatherData.merge(sinkBugs);
-  gatherData.merge(validateAudio);
+
+  if (inConfig.icd.snk != "N/A")
+  {
+    // Load sink audio streams to buffer for processing.
+    AudioLoad snkLoader(stdAF, inConfig.icd.snk, snkDescr, inConfig.icf.lout, 
+                        inConfig.icd.lofile, inConfig.icf.cout);
+    std::vector<Real> sinkBuffer = snkLoader.GetBuffer();
+    Pool snkLPool = snkLoader.GetLoaderData();
+    if (inConfig.icf.lout == true)
+      snkLoader.WriteToFile();
+
+    // Extract audio attributes from the sink buffer.
+    AudioAttrs snkAttrs(stdAF, sinkBuffer, snkLPool, snkDescr, 
+                        inConfig.icf.aout, inConfig.icd.aofile, 
+                        inConfig.icf.cout);
+    Pool sinkAttrs = snkAttrs.GetAttrData();
+    if (inConfig.icf.aout == true)
+      snkAttrs.WriteToFile();
+
+    // Look for and identify potential defects in the sink audio buffer.
+    AudioBug snkDiagnose(stdAF, sinkBuffer, sinkAttrs, snkDescr, 
+                         inConfig.icf.dout, inConfig.icd.dofile, 
+                         inConfig.icf.cout);
+    Pool sinkBugs = snkDiagnose.GetBugsData();
+    if (inConfig.icf.dout == true)
+      snkDiagnose.WriteToFile();
+
+    // Verify the audio by comparing to the source buffer.
+    AudioVerify validate(stdAF, sourceBuffer, sinkBuffer, 
+                         sourceAttrs, sinkAttrs, srcDescr, snkDescr, 
+                         inConfig.icf.vout, inConfig.icd.vofile, 
+                         inConfig.icf.cout);
+    Pool validateAudio = validate.GetValidationData();
+    if (inConfig.icf.vout == true)
+      validate.WriteToFile();
+
+    // Collect all the computed sink parameters in a data structure.
+    gatherData.merge(sinkAttrs);
+    gatherData.merge(sinkBugs);
+    gatherData.merge(validateAudio);
+  }
 
   // Generate and display the final result.
   generateResults(gatherData);
