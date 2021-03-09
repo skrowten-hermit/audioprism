@@ -55,8 +55,6 @@ CPPFLAGS := -pipe -Wall -O2 -fPIC -g
 # Set the targets and aliases.
 all : af av ad
 
-full : af av ad
-
 av : apveri
 
 ad : apdiag
