@@ -69,12 +69,11 @@ class AudioVerify
     Real sourceStdDev, sinkStdDev;
     Real xcorrNormFactor;
     
-    int audioExists = 0;
-    
     Real sourceRMS = 0.0;
     Real sinkRMS = 0.0;
     Real RMSMatch = 0.0;
     Real gainFactor = 0.0; 
+    Real gainDB = 0.0;
     
     Real audioSimilarityIndex;
     Real audioDelay;
@@ -82,12 +81,13 @@ class AudioVerify
     Pool verifyData;
 
     std::string srcDescr, snkDescr;
+    std::string similarity, audioExists;
 
     // Functions for processing data of the verifier class.
     std::vector<Real> CalcCCFSeq();
     Real GetCorrPeak();
     Real CalcRMSMatch();
-    int AudioExists();
+    std::string AudioExists();
     Real CalcDelay();
     
     // Functions for storing the attributes data in a pool data structure.

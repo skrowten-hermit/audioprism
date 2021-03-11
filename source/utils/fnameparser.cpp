@@ -39,11 +39,9 @@ string getFileName(const string& s)
   size_t i = s.rfind(SEP, s.length());
 
   if (i != string::npos) 
-  {
     return(s.substr(i + 1, s.length() - i));
-  }
-
-  return("");
+  else
+    return(s);
 }
 
 
@@ -52,12 +50,10 @@ string getFileDescr(const string& s)
   const string fnwithextn = getFileName(s);
   size_t i = fnwithextn.rfind('.', fnwithextn.length());
 
-  if (i != string::npos) 
-  {
+  if (i != string::npos)
     return(fnwithextn.substr(0, i));
-  }
-
-  return("");
+  else
+    return(fnwithextn);
 }
 
 /*

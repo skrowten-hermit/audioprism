@@ -72,6 +72,7 @@ AudioVerify::AudioVerify(esstd::AlgorithmFactory& saf,
   audioCrossCorrSeq = CalcCCFSeq();
   corrVectorPeak = GetCorrPeak();
   RMSMatch = CalcRMSMatch();
+  gainDB = 20 * log10(sinkRMS / sourceRMS);
   audioExists = AudioExists();
 
   verifyInfo = SetVerifyData();
@@ -196,7 +197,7 @@ Real AudioVerify::CalcDelay()
 }
 
 // Get the right channel of a stereo audio signal from a given audio file.
-int AudioVerify::AudioExists()
+std::string AudioVerify::AudioExists()
 {
   if (consoleOut == true)
   {
@@ -205,10 +206,24 @@ int AudioVerify::AudioExists()
   }
 
   // Return 1 if audio exists, -1 if no audio.
-  if (corrVectorPeak > APAE_THRESHOLD)
-    return 1;
+  if (-(APGA_THRESHOLD) <= round(gainDB) && round(gainDB) <= APGA_THRESHOLD)
+    return "Good Audio";
+  else if (round(gainDB) < APNA_THRESHOLD)
+    return "No Audio";
+  else if (APGA_THRESHOLD < round(gainDB) && round(gainDB) <= APHG_THRESHOLD)
+    return "Audio With Moderately High Gain";
+  else if (APHG_THRESHOLD < round(gainDB) && round(gainDB) <= APVH_THRESHOLD)
+    return "Audio With High Gain";
+  else if (round(gainDB) > APVH_THRESHOLD)
+    return "Audio With Very High Gain";
+  else if (APLG_THRESHOLD <= round(gainDB) && round(gainDB) < -(APGA_THRESHOLD))
+    return "Audio With Moderately Low Gain";
+  else if (APVL_THRESHOLD <= round(gainDB) && round(gainDB) < APLG_THRESHOLD)
+    return "Audio With Low Gain";
+  else if (APNA_THRESHOLD <= round(gainDB) && round(gainDB) < APVL_THRESHOLD)
+    return "Audio With Very Low Gain";
   else
-    return -1;
+    return "N/A";
 }
 
 // Store all the attributes in a Pool data structure.
@@ -226,6 +241,7 @@ Pool AudioVerify::SetVerifyData()
   vPool.set(srcDescr + "--x--" + snkDescr + ".CorrVectorPeak", 
             corrVectorPeak);
   vPool.set(srcDescr + "--x--" + snkDescr + ".GainFactor", gainFactor);
+  vPool.set(srcDescr + "--x--" + snkDescr + ".GainDecibels", gainDB);
   vPool.set(srcDescr + "--x--" + snkDescr + ".RMSMatch", RMSMatch);
 
   return vPool;
@@ -278,6 +294,7 @@ void AudioVerify::projectData()
   std::cout << "CCF Peak : " << corrVectorPeak << std::endl;
   std::cout << "RMS Match : " << RMSMatch << std::endl;
   std::cout << "Gain Factor : " << gainFactor << std::endl;
+  std::cout << "Gain in Decibels (dB) : " << gainDB << std::endl;
 }
 
 // Display the data from the data structure on the console.
@@ -293,8 +310,8 @@ void AudioVerify::printPool()
                verifyInfo.value<std::string>(srcDescr + "--x--" + snkDescr + 
                                              ".Degraded") << std::endl;
   std::cout << "Audio Present : " << 
-               verifyInfo.value<Real>(srcDescr + "--x--" + snkDescr + 
-                                      ".AudioExists") << std::endl;
+               verifyInfo.value<std::string>(srcDescr + "--x--" + snkDescr + 
+                                             ".AudioExists") << std::endl;
   std::cout << "CCF Peak : " << 
                verifyInfo.value<Real>(srcDescr + "--x--" + snkDescr + 
                                       ".CorrVectorPeak") << std::endl;
@@ -304,6 +321,9 @@ void AudioVerify::printPool()
   std::cout << "Gain Factor : " << 
                verifyInfo.value<Real>(srcDescr + "--x--" + snkDescr + 
                                       ".GainFactor") << std::endl;
+  std::cout << "Gain in Decibels (dB) : " << 
+               verifyInfo.value<Real>(srcDescr + "--x--" + snkDescr + 
+                                      ".GainDecibels") << std::endl;
 }
 
 // AudioVerify Destructor for closure.

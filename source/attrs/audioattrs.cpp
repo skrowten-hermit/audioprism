@@ -71,6 +71,38 @@ AudioAttrs::AudioAttrs(esstd::AlgorithmFactory& saf,
   }
 }
 
+// Remove the DC component from a given signal vector input.
+std::vector<Real> AudioAttrs::MinusDCComp()
+{
+  std::vector<Real> SVWODC;
+
+  if (consoleOut == true)
+  {
+    std::cout << std::endl;
+    std::cout << "Removing the DC component from the signal for " << fileTag 
+              << "...." << std::endl;
+  }
+
+  meanAlgo = AF.create("Mean");
+  meanAlgo->input("array").set(signalVector);
+  meanAlgo->output("mean").set(signalDCOffset);
+
+  meanAlgo->compute();
+
+  SVWODC = signalVector;
+
+  for(auto& element : SVWODC)
+    element -= signalDCOffset;
+
+  delete meanAlgo;
+
+  if (consoleOut == true)
+    std::cout << "The DC component removal from the signal for " << fileTag << 
+                 " done...." << std::endl;
+
+  return SVWODC;
+}
+
 // Get the auto-correlation function (ACF) for a given signal vector input.
 std::vector<Real> AudioAttrs::CalcACFSeq()
 {

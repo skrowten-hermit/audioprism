@@ -35,8 +35,32 @@
 #define CONSTREF_H
 
 
-#ifndef APAE_THRESHOLD
-#define APAE_THRESHOLD 0.1
+#ifndef APGA_THRESHOLD
+#define APGA_THRESHOLD 2.0
+#endif
+
+#ifndef APNA_THRESHOLD
+#define APNA_THRESHOLD -30.0
+#endif
+
+#ifndef APHG_THRESHOLD
+#define APHG_THRESHOLD 8.0
+#endif
+
+#ifndef APVH_THRESHOLD
+#define APVH_THRESHOLD 17.0
+#endif
+
+#ifndef APLG_THRESHOLD
+#define APLG_THRESHOLD -8.0
+#endif
+
+#ifndef APVL_THRESHOLD
+#define APVL_THRESHOLD -17.0
+#endif
+
+#ifndef APWF_THRESHOLD
+#define APWF_THRESHOLD 0.01
 #endif
 
 #ifndef DEFAULT_INPUT

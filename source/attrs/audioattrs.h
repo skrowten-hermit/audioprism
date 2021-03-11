@@ -58,9 +58,10 @@ class AudioAttrs
     esstd::Algorithm* rmsAlgo;
     esstd::Algorithm* snrAlgo;
     esstd::Algorithm* loudAlgo;
+    esstd::Algorithm* meanAlgo;
     esstd::Algorithm* Output;
 
-    std::vector<Real> signalVector, signalAutoCorr;
+    std::vector<Real> signalVector, signalVectorWODC , signalAutoCorr;
     std::vector<Real> signalFFT, signalFreqBandEnergy, signalPSD;
     std::vector<Real> FreqBands {0, 50, 100, 150, 200, 300, 400, 510, 
                                  630, 770, 920, 1080, 1270, 1480, 1720,
@@ -79,6 +80,7 @@ class AudioAttrs
     std::string Codec;
     
     Real signalF0, signalRMS, signalSNR, signalLoudness;
+    Real signalDCOffset, signalRMSWODC;
 
     std::string fileTag;
 
@@ -94,6 +96,7 @@ class AudioAttrs
     Real CalcRMS(); // Get the Root Mean Square of the audio signal.
     Real CalcSNR(); // Get the signal-to-Noise Ratio of the audio signal.
     Real CalcLoudness(); // Get the loudness of the audio signal.
+    std::vector<Real> MinusDCComp(); // Remove DC component from the signal.
     
     // Functions for storing the attributes data in a pool data structure.
     Pool StoreAttrs();  // For internal storage.
