@@ -224,6 +224,8 @@ std::string AudioVerify::AudioExists()
     return "Audio With Very Low Gain";
   else
     return "N/A";
+
+  // TODO: Add code to check if defects are there.
 }
 
 // Store all the attributes in a Pool data structure.

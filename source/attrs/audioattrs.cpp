@@ -62,6 +62,19 @@ AudioAttrs::AudioAttrs(esstd::AlgorithmFactory& saf,
   signalSNR = CalcSNR();
   signalLoudness = CalcLoudness();
 
+  for (unsigned int i = 0; i < signalFreqBandEnergy.size() - 1; i++)
+  {
+    std::string currBandEnergy;
+    std::string val(40, '\0');
+    std::string key = std::to_string(FreqBands[i]) + " - " + 
+                      std::to_string(FreqBands[i + 1]);
+    auto vals = std::snprintf(&val[0], val.size(), "%.20f", 
+                              signalFreqBandEnergy[i]);
+    val.resize(vals);
+    currBandEnergy = key + " : " + val;
+    FreqBandEnergy.push_back(currBandEnergy);
+  }
+
   attrsData = StoreAttrs();
 
   if (consoleOut == true)
@@ -170,9 +183,8 @@ std::vector<Real> AudioAttrs::GetFreqComponents()
   fbandsAlgo->compute();
 
   signalFFT = FFT;
-  signalFreqBandEnergy = FBE;
   sigFFTSize = signalFFT.size();
-  numFreqBands = signalFreqBandEnergy.size();
+  numFreqBands = FBE.size();
 
   delete fftAlgo;
   delete fbandsAlgo;
@@ -367,6 +379,7 @@ Pool AudioAttrs::StoreAttrs()
   attrsPool.set(fileTag + ".RMS", signalRMS);
   attrsPool.set(fileTag + ".SNR", signalSNR);
   attrsPool.set(fileTag + ".Loudness", signalLoudness);
+  attrsPool.set(fileTag + ".FreqBandEnergies", FreqBandEnergy);
 
   return attrsPool;
 }
@@ -396,7 +409,7 @@ void AudioAttrs::WriteToFile()
 // Print the members of the AudioLoad class to the console.
 void AudioAttrs::projectData()
 {
-  std::vector<Real> v = signalFreqBandEnergy;
+  std::vector<std::string> v = FreqBandEnergy;
   std::cout << std::endl;
   std::cout << "The following are data from " << fileTag << ":" << std::endl;
   std::cout << "Sample Size : " << SampleSize << std::endl;
@@ -411,7 +424,12 @@ void AudioAttrs::projectData()
   std::cout << "Size of Signal's FFT : " << sigFFTSize << std::endl;
   std::cout << "Size of Signal's ACF : " << sigACFSize << std::endl;
   std::cout << "Freq. Bands Present in Signal : ";
-  std::copy(v.begin(), v.end(), std::ostream_iterator<Real>(std::cout, " "));
+  for (unsigned int i = 0; i < FreqBandEnergy.size(); i++)
+  {
+    std::cout << FreqBandEnergy[i];
+    if(i != FreqBandEnergy.size() - 1)
+      std::cout << ", ";
+  }
   std::cout << std::endl;
   std::cout << "No. of Freq. Bands Present : " << numFreqBands << std::endl;
 }
@@ -440,6 +458,9 @@ void AudioAttrs::printPool()
                std::endl;
   std::cout << "Loudness Factor of Signal : " << 
                attrsData.value<Real>(fileTag + ".Loudness") << std::endl;
+  std::cout << "Freq. Bands Present in Signal : " << 
+               attrsData.value<std::vector<std::string>>
+               (fileTag + ".FreqBandEnergies") << std::endl;
 }
 
 AudioAttrs::~AudioAttrs()

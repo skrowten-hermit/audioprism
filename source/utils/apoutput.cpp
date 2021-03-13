@@ -39,7 +39,8 @@ void generateResults(Pool outputPool)
   std::vector<std::string> keys = outputPool.descriptorNames();
   std::map<std::string, std::vector<Real>> rvdescr = outputPool.getRealPool();
   std::map<std::string, Real> rsdescr = outputPool.getSingleRealPool();
-  std::map<std::string, std::vector<std::string>> svdescr = outputPool.getStringPool();
+  // std::map<std::string, std::vector<std::string>> svdescr = outputPool.getStringPool();
+  std::map<std::string, std::vector<std::string>> svdescr = outputPool.getSingleVectorStringPool();
   std::map<std::string, std::string> ssdescr = outputPool.getSingleStringPool();
   
   std::cout << std::endl;

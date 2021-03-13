@@ -63,11 +63,12 @@ class AudioAttrs
 
     std::vector<Real> signalVector, signalVectorWODC , signalAutoCorr;
     std::vector<Real> signalFFT, signalFreqBandEnergy, signalPSD;
-    std::vector<Real> FreqBands {0, 50, 100, 150, 200, 300, 400, 510, 
-                                 630, 770, 920, 1080, 1270, 1480, 1720,
-                                 2000, 2320, 2700, 3150, 3700, 4400, 
-                                 5300, 6400, 7700, 9500, 12000, 15500, 
-                                 20500, 27000};
+    std::vector<int> FreqBands {0, 50, 100, 150, 200, 300, 400, 510, 
+                                630, 770, 920, 1080, 1270, 1480, 1720,
+                                2000, 2320, 2700, 3150, 3700, 4400, 
+                                5300, 6400, 7700, 9500, 12000, 15500, 
+                                20500, 27000};
+    std::vector<std::string> FreqBandEnergy; 
     
     long unsigned int sigACFSize = 0, sigPSDSize = 0, sigFFTSize = 0;
     long unsigned int numFreqBands = 0;
