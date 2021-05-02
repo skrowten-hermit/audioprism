@@ -38,7 +38,8 @@ INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 INCFLAGS := $(addprefix -I,$(INC_LIBS)) $(addprefix -I,$(INC_DIRS))
 
 # Set the object files and dependencies.
-UTILOBJS := credits.o fnameparser.o getoptions.o apinput.o apoutput.o apmath.o 
+UTILOBJS := credits.o fnameparser.o getoptions.o apinput.o apoutput.o \
+            apmath.o version.o header.o
 UOWPATHS := $(addprefix $(BUILD_DIR)/,$(UTILOBJS))
 #DEPS := $(OBJS:.o=.d)
 
@@ -125,6 +126,14 @@ fnameparser.o : ./utils/fnameparser.cpp
 credits.o : ./credits/libav.cpp
 	$(CC) $(CPPFLAGS) -c ./credits/libav.cpp \
 	-o $(BUILD_DIR)/credits.o
+
+version.o : ./credits/apversion.cpp header.o
+	$(CC) $(CPPFLAGS) -I ./include/ -I ./utils/ -c ./credits/apversion.cpp \
+	$(BUILD_DIR)/header.o -o $(BUILD_DIR)/version.o
+
+header.o : ./utils/boxheader.cpp
+	$(CC) $(CPPFLAGS) -c ./utils/boxheader.cpp \
+	-o $(BUILD_DIR)/header.o
 
 .PHONY: clean
 clean :
