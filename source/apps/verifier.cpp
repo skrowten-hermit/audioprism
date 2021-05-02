@@ -34,6 +34,7 @@
 #include "apstdh.hpp"
 #include "apessh.hpp"
 
+#include "apversion.h"
 #include "libav.h"
 #include "getoptions.h"
 #include "fnameparser.h"
@@ -53,6 +54,7 @@ int main(int argc, char** argv)
   /* The following function processes, parses a set of user inputs and returns
      an object that enables to store them individually to be accessed later. */
   inputOpts inOpts = getOptions(argc, argv, app);
+  getapversion();
   creditLibAV();
   
   /* The following stores, processes and display each user input in and as a 

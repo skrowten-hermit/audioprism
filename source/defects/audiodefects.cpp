@@ -80,7 +80,9 @@ int AudioBug::DetectClickPop()
   
   fc = AF.create("FrameCutter", "frameSize", frameSize, "hopSize", hopSize);
   cd = AF.create("ClickDetector", "frameSize", frameSize, "hopSize", hopSize,
-                 //"detectionThreshold", 50,
+                 "detectionThreshold", APCDD_THRESHOLD,
+                 "powerEstimationThreshold", APCDP_THRESHOLD,
+                 "silenceThreshold", APCDS_THRESHOLD,
                  "sampleRate", SampleRate);
   
   fc->input("signal").set(audioSignalVector);
@@ -147,15 +149,22 @@ int AudioBug::DetectDiscontinuity()
   std::vector<Real> frame;
   
   fc = AF.create("FrameCutter", "frameSize", frameSize, "hopSize", hopSize);
-  gd = AF.create("GapsDetector", "frameSize", frameSize, "hopSize", hopSize, 
-                 "sampleRate", SampleRate);
+  //gd = AF.create("GapsDetector", "frameSize", frameSize, "hopSize", hopSize, 
+  //               "sampleRate", SampleRate);
+  gd = AF.create("DiscontinuityDetector", 
+                 "frameSize", frameSize, "hopSize", hopSize,
+                 "detectionThreshold", APDD_THRESHOLD,
+                 "energyThreshold", APDE_THRESHOLD,
+                 "silenceThreshold", APDS_THRESHOLD);
 
   fc->input("signal").set(audioSignalVector);
   fc->output("frame").set(frame);
   
   gd->input("frame").set(frame); 
-  gd->output("starts").set(gapStarts);
-  gd->output("ends").set(gapEnds);
+  //gd->output("starts").set(gapStarts);
+  //gd->output("ends").set(gapEnds);
+  gd->output("discontinuityLocations").set(discLocs);
+  gd->output("discontinuityAmplitudes").set(discAmpls);
 
   while (true)
   {
@@ -169,13 +178,15 @@ int AudioBug::DetectDiscontinuity()
     gd->compute();
   }
 
-  dStartsLen = gapStarts.size();
-  dEndsLen = gapEnds.size();
+  //dStartsLen = gapStarts.size();
+  //dEndsLen = gapEnds.size();
+  discLocsLen = discLocs.size();
+  discAmplsLen = discAmpls.size();
 
   delete fc;
   delete gd;
 
-  if (dStartsLen > 0 || dEndsLen > 0)
+  /*if (dStartsLen > 0 || dEndsLen > 0)
   {
     if (dStartsLen > dEndsLen)
       numGaps = dStartsLen;
@@ -183,7 +194,12 @@ int AudioBug::DetectDiscontinuity()
       numGaps = dEndsLen;
     else
       numGaps = dStartsLen;
-  }
+  }*/
+  
+  if (discLocsLen > 0)
+    numGaps = discLocsLen;
+  else
+    numGaps = 0;
 
   if (consoleOut == true)
     std::cout << "Discontinuity detection in " << fileTag << " done...." << 
@@ -215,7 +231,9 @@ int AudioBug::DetectNoiseBurst()
   }
   
   fc = AF.create("FrameCutter", "frameSize", frameSize, "hopSize", hopSize);
-  nb = AF.create("NoiseBurstDetector");
+  nb = AF.create("NoiseBurstDetector",
+                 "threshold", APNBD_THRESHOLD,
+                 "silenceThreshold", APNBS_THRESHOLD);
 
   fc->input("signal").set(audioSignalVector);
   fc->output("frame").set(frame);
@@ -271,8 +289,10 @@ Pool AudioBug::SetDefectInfo()
   dPool.set(fileTag + ".NumClicks", numClicks);
   //dPool.set(fileTag + ".ClickDurations", clickLengths);
   dPool.set(fileTag + ".GapsExists", gapsExists);
-  dPool.set(fileTag + ".GapStarts", gapStarts); 
-  dPool.set(fileTag + ".GapEnds", gapEnds); 
+  //dPool.set(fileTag + ".GapStarts", gapStarts); 
+  //dPool.set(fileTag + ".GapEnds", gapEnds); 
+  dPool.set(fileTag + ".GapLocations", discLocs); 
+  dPool.set(fileTag + ".GapAmplitudes", discAmpls); 
   dPool.set(fileTag + ".NumGaps", numGaps); 
   //dPool.set(fileTag + ".GapDurations", gapLengths); 
   dPool.set(fileTag + ".NoiseBurstsIdxs", nbIndexes);
@@ -377,8 +397,11 @@ void AudioBug::projectData()
   std::cout << "Clicks Ends Length : " << clickEndsLen << std::endl;
   std::cout << "No. of Clicks : " << numClicks << std::endl;
   std::cout << "Gaps Present : " << gapsExists << std::endl;
-  std::cout << "Gaps Starts Length : " << gapStartsLen << std::endl;
-  std::cout << "Gaps Ends Length : " << gapEndsLen << std::endl;
+  //std::cout << "Gaps Starts Length : " << gapStartsLen << std::endl;
+  //std::cout << "Gaps Ends Length : " << gapEndsLen << std::endl;
+  //std::cout << "No. of Gaps : " << numGaps << std::endl;
+  std::cout << "Gaps Locations Length : " << discLocsLen << std::endl;
+  std::cout << "Gaps Amplitudes Length : " << discAmplsLen << std::endl;
   std::cout << "No. of Gaps : " << numGaps << std::endl;
   std::cout << "Noise Bursts Present : " << nbExists << std::endl;
   std::cout << "No. of Noise Bursts : " << numNBSamples << std::endl;
@@ -392,19 +415,25 @@ void AudioBug::printPool()
                std::endl;
   std::cout << "Clicks Present : " << defectsData.value<Real>(fileTag + ".ClickExists") 
             << std::endl;
-  std::cout << "Clicks Starts : \n" << 
+  std::cout << "Clicks Starts : " << 
                defectsData.value<std::vector<Real>>(fileTag + ".ClickStarts") << std::endl;
-  std::cout << "Clicks Ends : \n" << 
+  std::cout << "Clicks Ends : " << 
                defectsData.value<std::vector<Real>>(fileTag + ".ClickEnds") << std::endl;
   std::cout << "No. of Clicks : " << 
                defectsData.value<Real>(fileTag + ".NumClicks") << std::endl;
   std::cout << "Gaps Present : " << 
                defectsData.value<Real>(fileTag + ".GapsExists") << std::endl;
-  std::cout << "Gaps Starts : \n" << 
-               defectsData.value<std::vector<Real>>(fileTag + ".GapStarts") << 
+  //std::cout << "Gaps Starts : \n" << 
+  //             defectsData.value<std::vector<Real>>(fileTag + ".GapStarts") << 
+  //             std::endl;
+  //std::cout << "Gaps Ends : \n" << 
+  //             defectsData.value<std::vector<Real>>(fileTag + ".GapEnds") << std::endl;
+  std::cout << "Gaps Locations : " << 
+               defectsData.value<std::vector<Real>>(fileTag + ".GapLocations") << 
                std::endl;
-  std::cout << "Gaps Ends : \n" << 
-               defectsData.value<std::vector<Real>>(fileTag + ".GapEnds") << std::endl;
+  std::cout << "Gaps Amplitudes : " << 
+               defectsData.value<std::vector<Real>>(fileTag + ".GapAmplitudes") 
+            << std::endl;
   std::cout << "No. of Gaps : " << defectsData.value<Real>(fileTag + ".NumGaps") 
             << std::endl;
   std::cout << "Noise Bursts : \n" << 

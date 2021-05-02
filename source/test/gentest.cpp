@@ -1,146 +1,44 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <map>
 
 using namespace std;
-
-class constVecTest1
-{
-private:
-    vector<int> vectortest;
-    static vector<int> vecOp1();
-public:
-    constVecTest1(vector<int> vin);
-    const vector<int> cvectorin;
-    vector<int> vectorin;
-    void vecOp2(vector<int> vin);
-};
-
-constVecTest1::constVecTest1(vector<int> vin) : vectortest(), cvectorin(vecOp1()), vectorin()
-{
-    vecOp2(vin);
-}
-
-// constVecTest1::constVecTest1(vector<int> vin)
-// {
-//   vectortest = vin;
-//   vectorin = vin;
-//   cvectorin = (const vector<int>) vectortest;
-
-//   cout << "Public Vector (vectorin) from constructor constVecTest1() : " << endl;
-//   for(unsigned int i=0; i < vin.size(); i++)
-//     cout << vectorin.at(i) << ' ';
-//   cout << endl;
-
-//   cout << "Private Vector (vectortest) from constructor constVecTest1() : " << endl;
-//   for(unsigned int i=0; i < vin.size(); i++)
-//     cout << vectortest.at(i) << ' ';
-//   cout << endl;
-
-//   copy(vectortest.begin(), vectortest.end(), back_inserter(cvectorin));
-
-//   cout << "Constant Vector (cvectorin) from constructor constVecTest1() : " << endl;
-//   for(unsigned int i=0; i < vin.size(); i++)
-//     cout << vectortest.at(i) << ' ';
-//   cout << endl;
-// }
-
-vector<int> constVecTest1::vecOp1()
-{
-    vector<int> result = {1, 0, 1, 0, 1};
-    return result;
-}
-
-void constVecTest1::vecOp2(vector<int> vin)
-{
-  vectortest = vin;
-  vectorin = vectortest;
-}
-
-class constVecTest2
-{
-private:
-    vector<int> vectortest;
-    vector<int> cvectorin;
-public:
-    constVecTest2(vector<int> vin);
-    const vector<int> &get_cvectorin() const { return cvectorin; }
-    vector<int> vectorin;
-    void vecOp1();
-    void vecOp2(vector<int> vin);
-};
-
-constVecTest2::constVecTest2(vector<int> vin)
-{
-  vecOp1();
-  vecOp2(vin);
-}
-
-void constVecTest2::vecOp1()
-{
-  vectortest = {1, 0, 1, 0, 1};
-  // cvectorin = vectortest;
-  copy(vectortest.begin(), vectortest.end(), back_inserter(cvectorin));
-}
-
-void constVecTest2::vecOp2(vector<int> vin)
-{
-  vectortest = vin;
-  vectorin = vectortest;
-}
 
 
 int main()
 {
-  vector<int> input {1, 2, 3, 4, 5}, update {6, 7, 8, 9};
-  vector<int> cvo, cvc;
-  const vector<int> cvm;
+  map<string, float> energies;
+  string key;
+  vector<int> FreqBands {0, 50, 100, 150, 200, 300, 400, 510, 
+                         630, 770, 920, 1080, 1270, 1480, 1720,
+                         2000, 2320, 2700, 3150, 3700, 4400, 
+                         5300, 6400, 7700, 9500, 12000, 15500, 
+                         20500, 27000};
+  vector<float> evals {0.00768436, 0.446009, 248.12, 505.001, 19609.6, 
+                       35825.6, 211410, 54585.7, 8338.55, 10951.4, 116563, 
+                       22817.2, 78838, 24598.1, 44082.6, 65265.6, 75600.8,
+                       116484, 21149.7, 28.5852, 0, 0, 0, 0, 0, 0, 0, 0};
+  vector<string> BandEnergies;
 
-  constVecTest1 cvt1(input);
-  cvo = cvt1.vectorin;
-  cvc = cvt1.cvectorin;
-  // cvm = cvc;
+  for (unsigned int i=0; i < FreqBands.size() - 1; i++)
+  {
+    string currBandEnergy;
+    string val(25, '\0');
+    string key = to_string(FreqBands[i]) + "-" + to_string(FreqBands[i+1]);
+    auto vals = snprintf(&val[0], val.size(), "%.20f", evals[i]);
+    val.resize(vals);
+    if (i != FreqBands.size() - 2)
+      currBandEnergy = key + " : " + val + ", ";
+    else
+      currBandEnergy = key + " : " + val;
+    BandEnergies.push_back(currBandEnergy);
+  }
 
-  cout << "Public Vector (vectorin) from main() : " << endl;
-  for(unsigned int i=0; i < cvo.size(); i++)
-    cout << cvo.at(i) << ' ';
+  for (auto element : BandEnergies)
+    cout << element;
+  
   cout << endl;
-
-  cout << "Constant Vector (cvectorin) from main() : " << endl;
-  for(unsigned int i=0; i < cvc.size(); i++)
-    cout << cvc.at(i) << ' ';
-  cout << endl;
-
-  /*cout << "Copied Vector (from cvectorin) from main() : " << endl;
-  for(unsigned int i=0; i < cvm.size(); i++)
-    cout << cvm.at(i) << ' ';
-  cout << endl;*/
-
-  cvc = update;
-  // cvt1.cvectorin = update;
-
-  constVecTest2 cvt2(input);
-  cvo = cvt2.vectorin;
-  cvc = cvt2.get_cvectorin();
-  // cvm = cvt2.get_cvectorin();
-  cvc.push_back(11);
-
-  cout << "Public Vector (vectorin) from main() : " << endl;
-  for(unsigned int i=0; i < cvo.size(); i++)
-    cout << cvo.at(i) << ' ';
-  cout << endl;
-
-  cout << "Constant Vector (cvectorin) from main() : " << endl;
-  for(unsigned int i=0; i < cvc.size(); i++)
-    cout << cvc.at(i) << ' ';
-  cout << endl;
-
-  cvc = update;
-
-  /*cout << "Copied Vector (from cvectorin) from main() : " << endl;
-  for(unsigned int i=0; i < cvm.size(); i++)
-    cout << cvm.at(i) << ' ';
-  cout << endl;*/
 
   return 0;
 }

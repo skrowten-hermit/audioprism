@@ -58,12 +58,15 @@ class AudioBug
     
     std::vector<Real> audioSignalVector;
     std::vector<Real> clickStarts, clickEnds;
+    std::vector<Real> discLocs, discAmpls;
     std::vector<Real> gapStarts, gapEnds;
     std::vector<Real> nbIndexes;
     
     long unsigned int clickStartsLen = 0, clickEndsLen = 0;
+    long unsigned int discLocsLen = 0, discAmplsLen = 0;
     long unsigned int gapStartsLen = 0, gapEndsLen = 0;
-    long unsigned int numClicks = 0, numGaps = 0, numNBSamples = 0;
+    long unsigned int numClicks = 0, numNBSamples = 0;
+    long unsigned int numGaps = 0, numDiscs = 0;
 
     int clickExists = 0;
     int gapsExists = 0;

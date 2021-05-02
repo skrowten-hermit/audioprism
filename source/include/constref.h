@@ -22,9 +22,9 @@
  * Description  : AudioPrism's constants are defined here.
  * Created On   : 15-09-2020.
  * Author       : Sreekanth Sreekumar.
- * Modified On  : 28-11-2020.
+ * Modified On  : 22-03-2021.
  * Modified By  : Sreekanth Sreekumar.
- * Changes Made : File header, description added.
+ * Changes Made : More threshold constants added.
  * 
  *******************************************************************************
  * 
@@ -34,6 +34,10 @@
 #ifndef CONSTREF_H
 #define CONSTREF_H
 
+
+#ifndef AP_VERSION
+#define AP_VERSION "v1.0-rc1"
+#endif
 
 #ifndef APGA_THRESHOLD
 #define APGA_THRESHOLD 2.0
@@ -61,6 +65,38 @@
 
 #ifndef APWF_THRESHOLD
 #define APWF_THRESHOLD 0.01
+#endif
+
+#ifndef APCDD_THRESHOLD
+#define APCDD_THRESHOLD 5.0
+#endif
+
+#ifndef APCDP_THRESHOLD
+#define APCDP_THRESHOLD 4
+#endif
+
+#ifndef APCDS_THRESHOLD
+#define APCDS_THRESHOLD -65
+#endif
+
+#ifndef APNBD_THRESHOLD
+#define APNBD_THRESHOLD 8
+#endif
+
+#ifndef APNBS_THRESHOLD
+#define APNBS_THRESHOLD -50
+#endif
+
+#ifndef APDD_THRESHOLD
+#define APDD_THRESHOLD 8.0
+#endif
+
+#ifndef APDE_THRESHOLD
+#define APDE_THRESHOLD -60.0
+#endif
+
+#ifndef APDS_THRESHOLD
+#define APDS_THRESHOLD -50
 #endif
 
 #ifndef DEFAULT_INPUT

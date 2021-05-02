@@ -1,0 +1,17 @@
+Loading Audio file
+Identifying Audio Signal Defects
+Clicks Present :
+Clicks Starts :
+Clicks Ends :
+No. of Clicks :
+Gaps Present :
+Gaps Locations :
+Gaps Amplitudes :
+No. of Gaps :
+Noise Bursts :
+No. of Noise Bursts :
+ClickExists -->
+NumClicks -->
+GapsExists -->
+NumGaps -->
+NumNoiseBursts -->
