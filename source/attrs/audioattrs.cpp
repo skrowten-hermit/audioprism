@@ -168,6 +168,11 @@ std::vector<Real> AudioAttrs::GetFreqComponents()
     std::cout << "Extracting the frequency components from " << fileTag << 
     "'s signal...." << std::endl;
   }
+
+  if (int(SampleSize)%2 == 1)
+  {
+    signalVector.push_back(0.0);
+  }
   
   fftAlgo = AF.create("Spectrum");
   fbandsAlgo = AF.create("FrequencyBands", "sampleRate", SampleRate);

@@ -38,6 +38,6 @@ using namespace std;
 // Format and print the tool version in a box header.
 void getapversion() 
 {
-  string header = "AudioPrsim : " + string(AP_VERSION);
+  string header = "AudioPrism : " + string(AP_VERSION);
   boxheader(header);
 }
